@@ -1,0 +1,6 @@
+{
+  "appId": "com.mythicclash.eternalarena",
+  "appName": "Mythic Clash",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}

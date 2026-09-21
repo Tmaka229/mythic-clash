@@ -1,0 +1,4913 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>MYTHIC CLASH: Eternal Arena</title>
+  <style>
+/* =====================================================
+   MYTHIC CLASH: Eternal Arena — Core Styles
+   Landscape Mobile AAA-style UI
+   ===================================================== */
+
+:root {
+  --bg-dark: #0a0a12;
+  --bg-panel: rgba(20, 20, 40, 0.85);
+  --bg-glass: rgba(30, 30, 60, 0.6);
+  --accent: #7b5cff;
+  --accent-glow: #a78bfa;
+  --gold: #ffd700;
+  --rarity-r: #4ade80;
+  --rarity-sr: #facc15;
+  --rarity-ssr: #fb923c;
+  --rarity-ssrplus: #ef4444;
+  --rarity-sss: #a855f7;
+  --rarity-secret: #e5e5e5;
+  --rarity-king: #fbbf24;
+  --text: #f1f5f9;
+  --text-dim: #94a3b8;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-dark);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  touch-action: manipulation;
+}
+
+/* Orientation Lock */
+#orientation-lock {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (orientation: portrait) {
+  #orientation-lock { display: flex; }
+  #game-container { display: none !important; }
+}
+
+.rotate-message h2 { font-size: 1.5rem; margin: 1rem 0; }
+.phone-icon { font-size: 4rem; animation: rotate-hint 2s infinite; }
+
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ========== SCREENS ========== */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* ========== LOADING ========== */
+#loading-screen {
+  background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a12 70%);
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-content {
+  text-align: center;
+  z-index: 2;
+}
+
+.eternal-core {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+
+.core-ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+}
+
+.core-ring:nth-child(2) {
+  inset: 15px;
+  border-top-color: var(--accent-glow);
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+}
+
+.core-center {
+  position: absolute;
+  inset: 35px;
+  background: radial-gradient(circle, var(--accent-glow), var(--accent));
+  border-radius: 50%;
+  box-shadow: 0 0 30px var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.game-title {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, #fff, var(--accent-glow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 40px rgba(123, 92, 255, 0.5);
+}
+
+.game-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+  margin-bottom: 2rem;
+}
+
+.loading-bar {
+  width: min(300px, 70vw);
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 auto 1rem;
+}
+
+.loading-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.loading-tip {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.loading-percent {
+  font-size: 0.9rem;
+  color: var(--accent-glow);
+}
+
+/* ========== LOBBY ========== */
+#lobby-screen {
+  background: #0a0a12;
+}
+
+.lobby-bg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 30% 20%, rgba(123, 92, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(167, 139, 250, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #0f0a1a 0%, #0a0a12 100%);
+  z-index: 0;
+}
+
+.lobby-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 50%, rgba(255,255,255,0.15) 0%, transparent 100%);
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.lobby-character-area {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: 280px;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lobby-character {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.char-silhouette {
+  position: relative;
+  width: 180px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: idle-breathe 3s ease-in-out infinite;
+}
+
+@keyframes idle-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.char-aura {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(123, 92, 255, 0.3) 0%, transparent 70%);
+  animation: aura-pulse 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes aura-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.char-body {
+  position: relative;
+  width: 100px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.char-head {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(145deg, #e2e8f0, #94a3b8);
+  border-radius: 50%;
+  margin-bottom: 5px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.char-head::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 8px;
+  height: 8px;
+  background: #1e293b;
+  border-radius: 50%;
+  box-shadow: 18px 0 0 #1e293b;
+}
+
+.char-torso {
+  width: 70px;
+  height: 100px;
+  background: linear-gradient(180deg, #4c1d95, #1e1b4b);
+  border-radius: 12px 12px 8px 8px;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.char-weapon {
+  position: absolute;
+  right: -30px;
+  top: 60px;
+  width: 12px;
+  height: 80px;
+  background: linear-gradient(180deg, #fbbf24, #b45309);
+  border-radius: 2px;
+  transform: rotate(15deg);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.char-name-tag {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+/* Top Bar */
+.top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  padding-top: var(--safe-top);
+  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  z-index: 10;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent), #4c1d95);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.player-text {
+  font-size: 0.85rem;
+}
+
+.player-level {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.resources {
+  display: flex;
+  gap: 12px;
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-glass);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+}
+
+.resource .icon { font-size: 1rem; }
+.resource .max { color: var(--text-dim); font-weight: 400; }
+
+/* Side Menus */
+.side-menu {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+  padding: 8px;
+}
+
+.left-menu { left: max(8px, var(--safe-left)); }
+.right-menu { right: max(8px, var(--safe-right)); }
+
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(12px);
+  gap: 2px;
+}
+
+.menu-btn:hover, .menu-btn:active {
+  background: rgba(123, 92, 255, 0.3);
+  border-color: var(--accent);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(123, 92, 255, 0.3);
+}
+
+.menu-btn.primary {
+  background: linear-gradient(135deg, rgba(123, 92, 255, 0.4), rgba(76, 29, 149, 0.4));
+  border-color: var(--accent);
+}
+
+.menu-btn.summon-btn {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(180, 83, 9, 0.25));
+  border-color: var(--gold);
+}
+
+.btn-icon { font-size: 1.4rem; }
+.btn-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; }
+
+/* Lobby Char Info */
+.lobby-char-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  padding-bottom: var(--safe-bottom);
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+  z-index: 10;
+}
+
+.char-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.char-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rarity-badge, .element-badge, .role-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.rarity-r { background: var(--rarity-r); color: #000; }
+.rarity-sr { background: var(--rarity-sr); color: #000; }
+.rarity-ssr { background: var(--rarity-ssr); color: #000; }
+.rarity-ssrplus { background: var(--rarity-ssrplus); color: #fff; }
+.rarity-sss { background: var(--rarity-sss); color: #fff; }
+.rarity-secret { background: linear-gradient(90deg, #111, #eee); color: #fff; }
+.rarity-king { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #000; box-shadow: 0 0 10px rgba(251,191,36,0.5); }
+
+.element-volt { background: #facc15; color: #000; }
+.element-flame { background: #ef4444; color: #fff; }
+.element-aqua { background: #3b82f6; color: #fff; }
+.element-gale { background: #22c55e; color: #000; }
+.element-frost { background: #67e8f9; color: #000; }
+.element-shadow { background: #6b21a8; color: #fff; }
+.element-radiant { background: #fef08a; color: #000; }
+.element-cosmic { background: linear-gradient(90deg, #a855f7, #ec4899); color: #fff; }
+.element-earth { background: #a16207; color: #fff; }
+.element-nature { background: #16a34a; color: #fff; }
+.element-physical { background: #64748b; color: #fff; }
+
+.role-badge { background: rgba(255,255,255,0.15); }
+
+.power-display {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.change-hero-btn {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.change-hero-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent-glow);
+}
+
+/* ========== COMMON UI ========== */
+.back-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.back-btn:hover { background: rgba(123,92,255,0.3); }
+
+.screen-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  margin: 16px 0;
+  text-shadow: 0 0 20px rgba(123,92,255,0.4);
+}
+
+/* Toast */
+#toast-container {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  backdrop-filter: blur(12px);
+  animation: toast-in 0.3s ease;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.toast.success { border-color: var(--rarity-r); }
+.toast.warning { border-color: var(--rarity-sr); }
+.toast.error { border-color: var(--rarity-ssrplus); }
+.toast.rare { border-color: var(--rarity-sss); box-shadow: 0 0 20px rgba(168,85,247,0.4); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(123,92,255,0.4); border-radius: 3px; }
+
+</style>
+  <style>
+/* Gacha & Summon Styles */
+
+#summon-screen {
+  background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a12 80%);
+}
+
+.summon-bg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 50% 30%, rgba(123,92,255,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(168,85,247,0.1) 0%, transparent 40%);
+}
+
+.summon-content {
+  display: flex;
+  height: 100%;
+  padding: 60px 20px 20px;
+  gap: 20px;
+}
+
+.summon-banner {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-art {
+  width: 100%;
+  max-width: 480px;
+  height: 320px;
+  background: linear-gradient(145deg, rgba(30,20,60,0.9), rgba(10,10,30,0.95));
+  border: 2px solid rgba(123,92,255,0.4);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(123,92,255,0.2);
+}
+
+.banner-glow {
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(from 0deg, transparent, rgba(123,92,255,0.15), transparent 30%);
+  animation: spin 8s linear infinite;
+}
+
+.banner-art h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, #fff, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  z-index: 1;
+}
+
+.banner-art p {
+  color: var(--text-dim);
+  margin-top: 8px;
+  z-index: 1;
+}
+
+.summon-panel {
+  flex: 0.9;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  backdrop-filter: blur(12px);
+}
+
+.banner-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.banner-tabs .tab {
+  flex: 1;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.banner-tabs .tab.active {
+  background: rgba(123,92,255,0.3);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.pity-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.pity-item {
+  background: rgba(0,0,0,0.3);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.rates-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.7rem;
+}
+
+.rate {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.rate.r { background: var(--rarity-r); color: #000; }
+.rate.sr { background: var(--rarity-sr); color: #000; }
+.rate.ssr { background: var(--rarity-ssr); color: #000; }
+.rate.ssrplus { background: var(--rarity-ssrplus); color: #fff; }
+.rate.sss { background: var(--rarity-sss); color: #fff; }
+.rate.secret { background: #222; color: #eee; border: 1px solid #888; }
+.rate.king { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #000; }
+
+.summon-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.summon-btn-x1, .summon-btn-x10 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.summon-btn-x1 {
+  background: linear-gradient(135deg, #4c1d95, #7b5cff);
+  color: #fff;
+}
+
+.summon-btn-x10 {
+  background: linear-gradient(135deg, #b45309, #fbbf24);
+  color: #000;
+}
+
+.summon-btn-x1:hover, .summon-btn-x10:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 25px rgba(123,92,255,0.4);
+}
+
+.summon-cost {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.free-summon-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #16a34a, #4ade80);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ========== GACHA CINEMATIC ========== */
+#gacha-cinematic {
+  background: #000;
+  z-index: 100;
+}
+
+.cinematic-bg {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  transition: background 0.5s;
+}
+
+.cinematic-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.summon-rings {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border: 3px solid rgba(123,92,255,0.6);
+  border-radius: 50%;
+  animation: spin 3s linear infinite;
+  opacity: 0;
+}
+
+.summon-rings::before {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border: 2px solid rgba(167,139,250,0.4);
+  border-radius: 50%;
+  animation: spin 2s linear infinite reverse;
+}
+
+.summon-crystals {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.summon-portal {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(123,92,255,0.8), transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+}
+
+.rarity-reveal {
+  position: absolute;
+  font-size: 4rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  opacity: 0;
+  text-shadow: 0 0 40px currentColor;
+  z-index: 5;
+}
+
+.character-reveal {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.5);
+  z-index: 6;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.character-reveal.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.reveal-portrait {
+  width: 160px;
+  height: 200px;
+  background: linear-gradient(145deg, #1e1b4b, #312e81);
+  border-radius: 16px;
+  border: 3px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.reveal-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.reveal-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.reveal-new {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  animation: pulse 1s infinite;
+}
+
+.skip-cinematic {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Rarity specific cinematic colors */
+.cinematic-bg.rarity-r { background: radial-gradient(circle, #14532d, #000); }
+.cinematic-bg.rarity-sr { background: radial-gradient(circle, #713f12, #000); }
+.cinematic-bg.rarity-ssr { background: radial-gradient(circle, #7c2d12, #000); }
+.cinematic-bg.rarity-ssrplus { background: radial-gradient(circle, #7f1d1d, #000); }
+.cinematic-bg.rarity-sss { background: radial-gradient(circle, #4c1d95, #000); }
+.cinematic-bg.rarity-secret { background: #000; }
+.cinematic-bg.rarity-king { background: radial-gradient(circle, #78350f, #000); }
+
+/* Multi result for x10 */
+.multi-results {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  max-width: 90vw;
+  padding: 20px;
+}
+
+.multi-result-card {
+  background: rgba(20,20,40,0.9);
+  border-radius: 12px;
+  border: 2px solid;
+  padding: 12px;
+  text-align: center;
+  animation: card-pop 0.4s ease backwards;
+}
+
+@keyframes card-pop {
+  from { opacity: 0; transform: scale(0.5) translateY(30px); }
+}
+
+.multi-result-card .card-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.multi-result-card .card-rarity {
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+</style>
+  <style>
+/* Battle Screen & Heroes/Team Styles */
+
+/* ========== HEROES SCREEN ========== */
+#heroes-screen {
+  background: #0a0a12;
+}
+
+.heroes-layout {
+  display: flex;
+  height: 100%;
+  padding: 50px 16px 16px;
+  gap: 16px;
+}
+
+.heroes-left {
+  flex: 1.4;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.heroes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.heroes-header h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.heroes-count {
+  background: var(--bg-panel);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-bar select {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.heroes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 6px;
+  flex: 1;
+}
+
+.hero-card {
+  background: var(--bg-panel);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  aspect-ratio: 0.75;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-card:hover, .hero-card.selected {
+  border-color: var(--accent);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(123,92,255,0.3);
+}
+
+.hero-card.locked {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.hero-card .card-portrait {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #312e81, #1e1b4b);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.hero-card .card-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.hero-card .card-rarity {
+  font-size: 0.55rem;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.hero-card .new-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.heroes-right {
+  flex: 0.8;
+  background: var(--bg-panel);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.preview-placeholder {
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.preview-portrait {
+  width: 140px;
+  height: 180px;
+  background: linear-gradient(145deg, #1e1b4b, #312e81);
+  border-radius: 16px;
+  border: 3px solid;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.preview-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.preview-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  font-size: 0.8rem;
+}
+
+.preview-stats div {
+  background: rgba(0,0,0,0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+/* ========== TEAM SCREEN ========== */
+#team-screen {
+  background: #0a0a12;
+  padding: 50px 16px 16px;
+  overflow-y: auto;
+}
+
+.team-presets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.preset-btn {
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.preset-btn.active {
+  background: rgba(123,92,255,0.3);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.formation-info {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-bottom: 16px;
+}
+
+.team-slots {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  max-width: 900px;
+  margin: 0 auto 20px;
+}
+
+.team-slot {
+  background: var(--bg-panel);
+  border: 2px dashed rgba(255,255,255,0.2);
+  border-radius: 12px;
+  aspect-ratio: 0.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.team-slot.filled {
+  border-style: solid;
+  border-color: var(--accent);
+}
+
+.team-slot:hover {
+  border-color: var(--accent-glow);
+}
+
+.slot-label {
+  position: absolute;
+  top: 6px;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.slot-char {
+  font-size: 2rem;
+  color: var(--text-dim);
+}
+
+.slot-char.empty { opacity: 0.4; }
+
+.team-power {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.available-heroes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+}
+
+/* ========== WORLD MAP ========== */
+#world-map-screen {
+  background: #0a0a12;
+  padding: 50px 16px 16px;
+}
+
+.world-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.world-tab {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.world-tab.active {
+  background: rgba(123,92,255,0.35);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.world-tab.locked {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.stage-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  max-height: 45vh;
+  overflow-y: auto;
+  padding: 10px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.stage-node {
+  background: var(--bg-panel);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.stage-node:hover, .stage-node.selected {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.stage-node.cleared {
+  border-color: var(--rarity-r);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.stage-node.locked {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.stage-node.boss {
+  border-color: var(--rarity-ssrplus);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.stage-node.hard {
+  border-color: #7f1d1d;
+}
+
+.stage-node .stage-id {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.stage-node .stage-stars {
+  font-size: 0.7rem;
+  margin-top: 4px;
+  color: var(--gold);
+}
+
+.stage-node .lock-icon {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.7rem;
+}
+
+.stage-info-panel {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stage-info-panel h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.stage-details {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.battle-start-btn {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--accent), #4c1d95);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.battle-start-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.battle-start-btn:not(:disabled):hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(123,92,255,0.5);
+}
+
+/* ========== BATTLE SCREEN ========== */
+#battle-screen {
+  background: #0a0a12;
+}
+
+.battle-arena {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#battle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(180deg, #1a1030 0%, #0f1a2e 50%, #0a1520 100%);
+}
+
+.enemy-team-bar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+.player-team-bar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+
+.team-portrait {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: linear-gradient(145deg, #1e1b4b, #312e81);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.team-portrait.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(251,191,36,0.5);
+  transform: scale(1.1);
+}
+
+.team-portrait.dead {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.team-portrait .hp-bar-mini {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  height: 3px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.team-portrait .hp-fill {
+  height: 100%;
+  background: #4ade80;
+  transition: width 0.3s;
+}
+
+.team-portrait .energy-fill {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  height: 2px;
+  background: #60a5fa;
+  transform-origin: left;
+}
+
+.battle-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px 16px;
+  z-index: 10;
+  background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+.joystick-area {
+  width: 110px;
+  height: 110px;
+}
+
+.joystick-base {
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  position: relative;
+  touch-action: none;
+}
+
+.joystick-knob {
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  background: rgba(123,92,255,0.7);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: background 0.1s;
+}
+
+.skill-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.skill-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(20,20,40,0.8);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skill-btn:active {
+  transform: scale(0.9);
+}
+
+.attack-btn { border-color: #f87171; background: rgba(239,68,68,0.3); }
+.dodge-btn { border-color: #60a5fa; background: rgba(59,130,246,0.3); }
+.skill1-btn { border-color: #a78bfa; background: rgba(123,92,255,0.3); }
+.skill2-btn { border-color: #fbbf24; background: rgba(251,191,36,0.25); }
+.ultimate-btn {
+  width: 64px;
+  height: 64px;
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(251,191,36,0.4), rgba(180,83,9,0.4));
+  font-size: 0.85rem;
+  box-shadow: 0 0 15px rgba(251,191,36,0.3);
+}
+
+.ultimate-btn.ready {
+  animation: ult-ready 1s ease-in-out infinite;
+}
+
+@keyframes ult-ready {
+  0%, 100% { box-shadow: 0 0 15px rgba(251,191,36,0.3); }
+  50% { box-shadow: 0 0 30px rgba(251,191,36,0.7); }
+}
+
+.battle-hud {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 10;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+}
+
+.timer {
+  font-size: 1.3rem;
+  color: var(--gold);
+}
+
+.wave-info {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* Battle Result */
+.battle-result {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.battle-result.hidden { display: none; }
+
+.result-content {
+  background: var(--bg-panel);
+  border: 2px solid rgba(123,92,255,0.4);
+  border-radius: 20px;
+  padding: 32px 48px;
+  text-align: center;
+  max-width: 90vw;
+  animation: result-pop 0.4s ease;
+}
+
+@keyframes result-pop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.result-content h2 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fff, var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.result-stars {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.result-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.result-rewards {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.result-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.result-buttons button {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#result-next {
+  background: linear-gradient(135deg, var(--accent), #4c1d95);
+  color: #fff;
+}
+
+#result-retry {
+  background: var(--bg-glass);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+#result-home {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-dim);
+}
+
+/* Character Detail */
+#character-detail-screen {
+  background: #0a0a12;
+  padding: 50px 16px 16px;
+}
+
+.char-detail-layout {
+  display: flex;
+  height: calc(100% - 20px);
+  gap: 20px;
+}
+
+.char-detail-left {
+  flex: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.char-large-preview {
+  width: 220px;
+  height: 300px;
+  background: linear-gradient(145deg, #1e1b4b, #312e81);
+  border-radius: 20px;
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  box-shadow: 0 0 40px rgba(123,92,255,0.3);
+}
+
+.char-detail-right {
+  flex: 1.2;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.char-detail-right h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.detail-meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.detail-level, .detail-stars, .detail-power {
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.detail-power { color: var(--gold); font-weight: 700; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.stat-item {
+  background: rgba(0,0,0,0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.stat-item .stat-label {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+}
+
+.stat-item .stat-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.skills-section {
+  margin: 16px 0;
+}
+
+.skills-section h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--accent-glow);
+}
+
+.skill-item {
+  background: rgba(0,0,0,0.25);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--accent);
+}
+
+.skill-item .skill-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.skill-item .skill-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#btn-levelup {
+  background: linear-gradient(135deg, #16a34a, #4ade80);
+  color: #000;
+}
+
+#btn-awaken {
+  background: linear-gradient(135deg, #7c2d12, #fb923c);
+  color: #fff;
+}
+
+#btn-set-lobby {
+  background: linear-gradient(135deg, var(--accent), #4c1d95);
+  color: #fff;
+}
+
+/* Settings */
+#settings-screen {
+  background: #0a0a12;
+  padding: 50px 16px 16px;
+}
+
+.settings-panel {
+  max-width: 500px;
+  margin: 0 auto;
+  background: var(--bg-panel);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.setting-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.setting-group select, .setting-group input[type="range"] {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.danger-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(239,68,68,0.2);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.danger-btn:hover {
+  background: rgba(239,68,68,0.4);
+}
+
+</style>
+</head>
+<body>
+  <div id="orientation-lock">
+    <div class="rotate-message">
+      <div class="phone-icon">📱</div>
+      <h2>กรุณาหมุนหน้าจอเป็นแนวนอน</h2>
+      <p>Please rotate your device to Landscape</p>
+    </div>
+  </div>
+
+  <div id="game-container">
+    <!-- LOADING -->
+    <div id="loading-screen" class="screen active">
+      <div class="loading-content">
+        <div class="eternal-core">
+          <div class="core-ring"></div>
+          <div class="core-ring"></div>
+          <div class="core-center"></div>
+        </div>
+        <h1 class="game-title">MYTHIC CLASH</h1>
+        <p class="game-subtitle">Eternal Arena</p>
+        <div class="loading-bar">
+          <div class="loading-progress" id="loading-progress"></div>
+        </div>
+        <p class="loading-tip" id="loading-tip">กำลังโหลดข้อมูลนักรบ 75 ตัวจาก Eternal Core...</p>
+        <p class="loading-percent" id="loading-percent">0%</p>
+      </div>
+    </div>
+
+    <!-- LOBBY -->
+    <div id="lobby-screen" class="screen">
+      <div class="lobby-bg" id="lobby-bg"></div>
+      
+      <div class="lobby-character-area">
+        <div id="lobby-character" class="lobby-character">
+          <div class="char-silhouette" id="lobby-char-visual">
+            <div class="char-aura"></div>
+            <div class="char-body">
+              <div class="char-head"></div>
+              <div class="char-torso"></div>
+              <div class="char-weapon"></div>
+            </div>
+            <div class="char-name-tag" id="lobby-char-name-tag">LUMI VERA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="player-info" onclick="Game.showSettings()">
+          <div class="avatar">⚔️</div>
+          <div class="player-text">
+            <div id="player-name">Core Seeker</div>
+            <div class="player-level">Lv. <span id="player-level">1</span></div>
+          </div>
+        </div>
+        <div class="resources">
+          <div class="resource energy" title="Energy">
+            <span class="icon">⚡</span>
+            <span id="energy">120</span><span class="max">/120</span>
+          </div>
+          <div class="resource coins" title="Coins">
+            <span class="icon">🪙</span>
+            <span id="coins">85,200</span>
+          </div>
+          <div class="resource gems" title="Gems">
+            <span class="icon">💎</span>
+            <span id="gems">12,500</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Menu -->
+      <nav class="side-menu left-menu">
+        <button class="menu-btn primary" data-action="story">
+          <span class="btn-icon">⚔️</span>
+          <span class="btn-label">BATTLE</span>
+        </button>
+        <button class="menu-btn" data-action="story">
+          <span class="btn-icon">📖</span>
+          <span class="btn-label">STORY</span>
+        </button>
+        <button class="menu-btn" data-action="arena">
+          <span class="btn-icon">🏟️</span>
+          <span class="btn-label">ARENA</span>
+        </button>
+        <button class="menu-btn" data-action="quest">
+          <span class="btn-icon">📜</span>
+          <span class="btn-label">QUEST</span>
+        </button>
+        <button class="menu-btn" data-action="event">
+          <span class="btn-icon">🎉</span>
+          <span class="btn-label">EVENT</span>
+        </button>
+      </nav>
+
+      <!-- Right Menu -->
+      <nav class="side-menu right-menu">
+        <button class="menu-btn summon-btn" data-action="summon">
+          <span class="btn-icon">✨</span>
+          <span class="btn-label">SUMMON</span>
+        </button>
+        <button class="menu-btn" data-action="heroes">
+          <span class="btn-icon">👥</span>
+          <span class="btn-label">HEROES</span>
+        </button>
+        <button class="menu-btn" data-action="team">
+          <span class="btn-icon">🛡️</span>
+          <span class="btn-label">TEAM</span>
+        </button>
+        <button class="menu-btn" data-action="shop">
+          <span class="btn-icon">🛒</span>
+          <span class="btn-label">SHOP</span>
+        </button>
+        <button class="menu-btn" data-action="ranking">
+          <span class="btn-icon">🏆</span>
+          <span class="btn-label">RANKING</span>
+        </button>
+      </nav>
+
+      <!-- Bottom Character Info -->
+      <div class="lobby-char-info">
+        <div class="char-info-left">
+          <div id="lobby-char-name" class="char-name">LUMI VERA</div>
+          <div class="char-meta">
+            <span id="lobby-char-rarity" class="rarity-badge rarity-r">R</span>
+            <span id="lobby-char-element" class="element-badge element-volt">VOLT</span>
+            <span id="lobby-char-role" class="role-badge">Marksman</span>
+          </div>
+        </div>
+        <div class="char-info-right">
+          <div class="power-display">POWER <span id="lobby-char-power">1,250</span></div>
+          <button id="change-hero-btn" class="change-hero-btn">CHANGE HERO</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMON SCREEN -->
+    <div id="summon-screen" class="screen">
+      <div class="summon-bg"></div>
+      <button class="back-btn" data-action="lobby">← BACK</button>
+      
+      <div class="summon-content">
+        <div class="summon-banner">
+          <div class="banner-art" id="banner-art">
+            <div class="banner-glow"></div>
+            <h2>ETERNAL SUMMON</h2>
+            <p>รวบรวมนักรบจาก Eternal Core</p>
+          </div>
+        </div>
+
+        <div class="summon-panel">
+          <div class="banner-tabs">
+            <button class="tab active" data-banner="normal">NORMAL</button>
+            <button class="tab" data-banner="event">EVENT</button>
+            <button class="tab" data-banner="king">KING</button>
+            <button class="tab" data-banner="free">FREE</button>
+          </div>
+
+          <div class="pity-info">
+            <div class="pity-item">SSR Pity: <span id="pity-ssr">0</span>/80</div>
+            <div class="pity-item">SSR+ Pity: <span id="pity-ssrplus">0</span>/150</div>
+            <div class="pity-item">SSS Pity: <span id="pity-sss">0</span>/250</div>
+          </div>
+
+          <div class="rates-info">
+            <span class="rate r">R 58%</span>
+            <span class="rate sr">SR 25%</span>
+            <span class="rate ssr">SSR 10%</span>
+            <span class="rate ssrplus">SSR+ 4.5%</span>
+            <span class="rate sss">SSS 1.8%</span>
+            <span class="rate secret">SECRET 0.6%</span>
+            <span class="rate king">KING 0.1%</span>
+          </div>
+
+          <div class="summon-buttons">
+            <button class="summon-btn-x1" id="summon-x1">
+              <span class="summon-cost">💎 160</span>
+              <span>SUMMON x1</span>
+            </button>
+            <button class="summon-btn-x10" id="summon-x10">
+              <span class="summon-cost">💎 1600</span>
+              <span>SUMMON x10</span>
+            </button>
+          </div>
+          <button class="free-summon-btn" id="free-summon" style="display:none;">
+            FREE SUMMON (Available)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GACHA CINEMATIC -->
+    <div id="gacha-cinematic" class="screen">
+      <div class="cinematic-bg" id="cinematic-bg"></div>
+      <div class="cinematic-content" id="cinematic-content">
+        <div class="summon-rings"></div>
+        <div class="summon-crystals"></div>
+        <div class="summon-portal"></div>
+        <div class="rarity-reveal" id="rarity-reveal"></div>
+        <div class="character-reveal" id="character-reveal"></div>
+      </div>
+      <button class="skip-cinematic" id="skip-cinematic">SKIP</button>
+    </div>
+
+    <!-- HEROES SCREEN -->
+    <div id="heroes-screen" class="screen">
+      <button class="back-btn" data-action="lobby">← BACK</button>
+      <div class="heroes-layout">
+        <div class="heroes-left">
+          <div class="heroes-header">
+            <h2>HEROES</h2>
+            <div class="heroes-count"><span id="owned-count">0</span>/75</div>
+          </div>
+          <div class="filter-bar">
+            <select id="filter-rarity">
+              <option value="all">All Rarity</option>
+              <option value="R">R</option>
+              <option value="SR">SR</option>
+              <option value="SSR">SSR</option>
+              <option value="SSR+">SSR+</option>
+              <option value="SSS">SSS</option>
+              <option value="SECRET">SECRET</option>
+              <option value="KING">KING</option>
+            </select>
+            <select id="filter-element">
+              <option value="all">All Element</option>
+              <option value="Flame">Flame</option>
+              <option value="Aqua">Aqua</option>
+              <option value="Volt">Volt</option>
+              <option value="Gale">Gale</option>
+              <option value="Frost">Frost</option>
+              <option value="Shadow">Shadow</option>
+              <option value="Radiant">Radiant</option>
+              <option value="Cosmic">Cosmic</option>
+              <option value="Earth">Earth</option>
+              <option value="Nature">Nature</option>
+              <option value="Physical">Physical</option>
+            </select>
+            <select id="sort-heroes">
+              <option value="power">Power</option>
+              <option value="rarity">Rarity</option>
+              <option value="level">Level</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+          <div class="heroes-grid" id="heroes-grid"></div>
+        </div>
+        <div class="heroes-right">
+          <div class="hero-preview" id="hero-preview">
+            <div class="preview-placeholder">เลือกตัวละคร</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM SCREEN -->
+    <div id="team-screen" class="screen">
+      <button class="back-btn" data-action="lobby">← BACK</button>
+      <h2 class="screen-title">TEAM SETUP</h2>
+      
+      <div class="team-presets">
+        <button class="preset-btn active" data-preset="1">TEAM 1</button>
+        <button class="preset-btn" data-preset="2">TEAM 2</button>
+        <button class="preset-btn" data-preset="3">TEAM 3</button>
+        <button class="preset-btn" data-preset="4">TEAM 4</button>
+        <button class="preset-btn" data-preset="5">TEAM 5</button>
+      </div>
+
+      <div class="formation-info">
+        <span class="formation-label">FORMATION: Front / Middle / Back</span>
+      </div>
+
+      <div class="team-slots" id="team-slots">
+        <div class="team-slot" data-slot="0">
+          <div class="slot-label">1 FRONT</div>
+          <div class="slot-char empty">+</div>
+        </div>
+        <div class="team-slot" data-slot="1">
+          <div class="slot-label">2 FRONT</div>
+          <div class="slot-char empty">+</div>
+        </div>
+        <div class="team-slot" data-slot="2">
+          <div class="slot-label">3 MIDDLE</div>
+          <div class="slot-char empty">+</div>
+        </div>
+        <div class="team-slot" data-slot="3">
+          <div class="slot-label">4 MIDDLE</div>
+          <div class="slot-char empty">+</div>
+        </div>
+        <div class="team-slot" data-slot="4">
+          <div class="slot-label">5 BACK</div>
+          <div class="slot-char empty">+</div>
+        </div>
+        <div class="team-slot" data-slot="5">
+          <div class="slot-label">6 BACK</div>
+          <div class="slot-char empty">+</div>
+        </div>
+      </div>
+
+      <div class="team-power">
+        Total Power: <span id="team-total-power">0</span>
+      </div>
+
+      <div class="available-heroes" id="available-heroes"></div>
+    </div>
+
+    <!-- WORLD MAP -->
+    <div id="world-map-screen" class="screen">
+      <button class="back-btn" data-action="lobby">← LOBBY</button>
+      <h2 class="screen-title">WORLD MAP — ECLYRIA</h2>
+      
+      <div class="world-tabs" id="world-tabs"></div>
+      
+      <div class="stage-map" id="stage-map">
+        <!-- Stages will be generated -->
+      </div>
+
+      <div class="stage-info-panel" id="stage-info-panel">
+        <h3 id="stage-name">Select a Stage</h3>
+        <div class="stage-details">
+          <div>Recommended Power: <span id="stage-power">-</span></div>
+          <div>Stars: <span id="stage-stars">☆☆☆</span></div>
+          <div id="stage-rewards">Rewards: -</div>
+        </div>
+        <button class="battle-start-btn" id="start-stage-btn" disabled>START BATTLE</button>
+      </div>
+    </div>
+
+    <!-- BATTLE SCREEN -->
+    <div id="battle-screen" class="screen">
+      <div class="battle-arena" id="battle-arena">
+        <canvas id="battle-canvas"></canvas>
+        
+        <!-- Enemy Team HP -->
+        <div class="enemy-team-bar" id="enemy-team-bar"></div>
+        
+        <!-- Player Team Switch -->
+        <div class="player-team-bar" id="player-team-bar"></div>
+        
+        <!-- Controls -->
+        <div class="battle-controls">
+          <div class="joystick-area" id="joystick-area">
+            <div class="joystick-base">
+              <div class="joystick-knob" id="joystick-knob"></div>
+            </div>
+          </div>
+          
+          <div class="skill-buttons">
+            <button class="skill-btn attack-btn" id="btn-attack">ATK</button>
+            <button class="skill-btn dodge-btn" id="btn-dodge">DODGE</button>
+            <button class="skill-btn skill1-btn" id="btn-skill1">S1</button>
+            <button class="skill-btn skill2-btn" id="btn-skill2">S2</button>
+            <button class="skill-btn ultimate-btn" id="btn-ultimate">ULT</button>
+          </div>
+        </div>
+
+        <!-- Battle HUD -->
+        <div class="battle-hud">
+          <div class="timer" id="battle-timer">03:00</div>
+          <div class="wave-info" id="wave-info">Wave 1/5</div>
+        </div>
+      </div>
+
+      <!-- Battle Result Overlay -->
+      <div id="battle-result" class="battle-result hidden">
+        <div class="result-content">
+          <h2 id="result-title">VICTORY!</h2>
+          <div class="result-stars" id="result-stars">⭐⭐⭐</div>
+          <div class="result-stats">
+            <div>Time: <span id="result-time">00:00</span></div>
+            <div>Damage: <span id="result-damage">0</span></div>
+            <div>Survivors: <span id="result-survivors">6/6</span></div>
+          </div>
+          <div class="result-rewards" id="result-rewards"></div>
+          <div class="result-buttons">
+            <button id="result-next">NEXT</button>
+            <button id="result-retry">RETRY</button>
+            <button id="result-home">HOME</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARACTER DETAIL -->
+    <div id="character-detail-screen" class="screen">
+      <button class="back-btn" data-action="heroes">← BACK</button>
+      <div class="char-detail-layout">
+        <div class="char-detail-left">
+          <div class="char-large-preview" id="char-large-preview"></div>
+        </div>
+        <div class="char-detail-right">
+          <h2 id="detail-name">Name</h2>
+          <div class="detail-meta">
+            <span id="detail-rarity" class="rarity-badge"></span>
+            <span id="detail-element" class="element-badge"></span>
+            <span id="detail-role" class="role-badge"></span>
+          </div>
+          <div class="detail-level">Lv. <span id="detail-level">1</span> / <span id="detail-max-level">60</span></div>
+          <div class="detail-stars" id="detail-stars">★☆☆☆☆</div>
+          <div class="detail-power">POWER <span id="detail-power">0</span></div>
+          
+          <div class="stats-grid" id="stats-grid"></div>
+          
+          <div class="skills-section">
+            <h3>SKILLS</h3>
+            <div id="skills-list"></div>
+          </div>
+
+          <div class="detail-actions">
+            <button id="btn-levelup">LEVEL UP</button>
+            <button id="btn-awaken">AWAKEN</button>
+            <button id="btn-set-lobby">SET AS LOBBY HERO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings-screen" class="screen">
+      <button class="back-btn" data-action="lobby">← BACK</button>
+      <h2 class="screen-title">SETTINGS</h2>
+      <div class="settings-panel">
+        <div class="setting-group">
+          <label>Graphics</label>
+          <select id="setting-graphics">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="ultra">Ultra</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>FPS</label>
+          <select id="setting-fps">
+            <option value="30">30</option>
+            <option value="60" selected>60</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>Screen Shake</label>
+          <input type="checkbox" id="setting-shake" checked>
+        </div>
+        <div class="setting-group">
+          <label>Damage Numbers</label>
+          <input type="checkbox" id="setting-damage-num" checked>
+        </div>
+        <div class="setting-group">
+          <label>Music</label>
+          <input type="range" id="setting-music" min="0" max="100" value="70">
+        </div>
+        <div class="setting-group">
+          <label>SFX</label>
+          <input type="range" id="setting-sfx" min="0" max="100" value="80">
+        </div>
+        <div class="setting-group">
+          <label>Language</label>
+          <select id="setting-lang">
+            <option value="th" selected>ไทย</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <button class="danger-btn" id="reset-save">RESET ALL DATA</button>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+  </div>
+
+  <script>
+/**
+ * MYTHIC CLASH: Eternal Arena
+ * Character Database — 75 Original Characters
+ * All characters are 100% ORIGINAL. No copyrighted designs.
+ */
+
+const RARITY_ORDER = { 'R': 1, 'SR': 2, 'SSR': 3, 'SSR+': 4, 'SSS': 5, 'SECRET': 6, 'KING': 7 };
+const RARITY_COLORS = {
+  'R': '#4ade80', 'SR': '#facc15', 'SSR': '#fb923c',
+  'SSR+': '#ef4444', 'SSS': '#a855f7', 'SECRET': '#e5e5e5', 'KING': '#fbbf24'
+};
+
+const ELEMENTS = ['Flame', 'Aqua', 'Volt', 'Gale', 'Frost', 'Shadow', 'Radiant', 'Cosmic', 'Earth', 'Nature', 'Physical'];
+
+const ELEMENT_ADVANTAGE = {
+  Flame: 'Frost', Aqua: 'Flame', Volt: 'Aqua', Gale: 'Volt',
+  Frost: 'Gale', Shadow: 'Radiant', Radiant: 'Shadow'
+};
+
+const CHARACTERS = [
+  // ==================== R (1-20) ====================
+  {
+    id: 1, name: 'LUMI VERA', rarity: 'R', element: 'Volt', role: 'Marksman',
+    gender: 'F', description: 'นักสำรวจตัวเล็ก ผมน้ำตาลสั้น แว่นกลม ใช้ปืนพลังงานคู่',
+    baseStats: { hp: 3200, atk: 420, def: 180, spd: 110, critRate: 12, critDmg: 150, energy: 100, effectRes: 10, penetration: 5, healing: 0 },
+    skills: {
+      basic: { name: 'Energy Shot', desc: 'ยิงกระสุนพลังงานพื้นฐาน' },
+      skill1: { name: 'Spark Shot', desc: 'ยิงกระสุนไฟฟ้า 5 นัด', cooldown: 8 },
+      skill2: { name: 'Flash Step', desc: 'พุ่งตัวไปด้านหลังศัตรู', cooldown: 12 },
+      passive: { name: 'Quick Hands', desc: 'ความเร็วโจมตีเพิ่มเมื่อ HP > 70%' },
+      ultimate: { name: 'Thunder Barrage', desc: 'ยิงกระสุนไฟฟ้าต่อเนื่อง' }
+    },
+    maxStars: 3, icon: '⚡'
+  },
+  {
+    id: 2, name: 'KORVAN', rarity: 'R', element: 'Earth', role: 'Tank',
+    gender: 'M', description: 'ชายร่างใหญ่ ผิวเข้ม ผมสั้น ใช้ถุงมือเหล็กขนาดใหญ่',
+    baseStats: { hp: 5200, atk: 280, def: 380, spd: 70, critRate: 5, critDmg: 130, energy: 100, effectRes: 25, penetration: 0, healing: 0 },
+    skills: {
+      basic: { name: 'Iron Fist', desc: 'ต่อยด้วยถุงมือเหล็ก' },
+      skill1: { name: 'Heavy Punch', desc: 'ต่อยพื้นสร้างคลื่นกระแทก', cooldown: 10 },
+      skill2: { name: 'Boulder Guard', desc: 'ยกกำแพงหินป้องกัน', cooldown: 15 },
+      passive: { name: 'Thick Skin', desc: 'ได้รับความเสียหายน้อยลง 8%' },
+      ultimate: { name: 'Mountain Crush', desc: 'กระแทกพื้นสร้างความเสียหายวงกว้าง' }
+    },
+    maxStars: 3, icon: '🪨'
+  },
+  {
+    id: 3, name: 'UIREN', rarity: 'R', element: 'Nature', role: 'Support',
+    gender: 'F', description: 'เด็กสาวนักสมุนไพร ผมเขียวอ่อน เสื้อคลุมขาว ใช้ดาบสั้นคู่',
+    baseStats: { hp: 3600, atk: 300, def: 200, spd: 95, critRate: 8, critDmg: 140, energy: 100, effectRes: 15, penetration: 0, healing: 40 },
+    skills: {
+      basic: { name: 'Herb Slash', desc: 'โจมตีด้วยดาบสั้น' },
+      skill1: { name: 'Leaf Cutter', desc: 'ใบมีดใบหญ้าโจมตีศัตรู', cooldown: 8 },
+      skill2: { name: 'Healing Bloom', desc: 'ฟื้นฟู HP ทีม', cooldown: 14 },
+      passive: { name: 'Herbal Care', desc: 'เพิ่มพลังฟื้นฟูทีม 10%' },
+      ultimate: { name: 'Nature Embrace', desc: 'ฟื้นฟูและเพิ่ม DEF ทีม' }
+    },
+    maxStars: 3, icon: '🌿'
+  },
+  {
+    id: 4, name: 'SHINARA', rarity: 'R', element: 'Frost', role: 'Mage',
+    gender: 'F', description: 'หญิงนักเวทผมเงินยาว เสื้อคลุมน้ำเงินเข้ม ใช้คทาคริสตัล',
+    baseStats: { hp: 3000, atk: 480, def: 150, spd: 85, critRate: 10, critDmg: 160, energy: 100, effectRes: 12, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Frost Bolt', desc: 'ยิงลูกน้ำแข็ง' },
+      skill1: { name: 'Ice Needle', desc: 'เข็มน้ำแข็งแทงศัตรู', cooldown: 7 },
+      skill2: { name: 'Frozen Circle', desc: 'สร้างวงน้ำแข็งชะลอศัตรู', cooldown: 13 },
+      passive: { name: 'Cold Mind', desc: 'ลดระยะเวลาสถานะผิดปกติ 15%' },
+      ultimate: { name: 'Blizzard', desc: 'พายุหิมะสร้างความเสียหายต่อเนื่อง' }
+    },
+    maxStars: 3, icon: '❄️'
+  },
+  {
+    id: 5, name: 'MEIRA', rarity: 'R', element: 'Gale', role: 'Fighter',
+    gender: 'F', description: 'หญิงนักเดินทางผมชมพู ใช้ดาบโค้ง',
+    baseStats: { hp: 3400, atk: 400, def: 190, spd: 120, critRate: 15, critDmg: 155, energy: 100, effectRes: 10, penetration: 5, healing: 0 },
+    skills: {
+      basic: { name: 'Wind Blade', desc: 'ฟันด้วยดาบโค้ง' },
+      skill1: { name: 'Wind Slash', desc: 'คลื่นลมคมกริบ', cooldown: 8 },
+      skill2: { name: 'Cyclone Dash', desc: 'พุ่งตัวพร้อมลมหมุน', cooldown: 11 },
+      passive: { name: 'Traveler', desc: 'ได้รับ Speed เพิ่มขึ้น 8%' },
+      ultimate: { name: 'Tempest Dance', desc: 'ระบำลมโจมตีหลายครั้ง' }
+    },
+    maxStars: 3, icon: '🌪️'
+  },
+  {
+    id: 6, name: 'KONRI', rarity: 'R', element: 'Shadow', role: 'Controller',
+    gender: 'M', description: 'เด็กชายผมดำ หน้ากากครึ่งหน้า ใช้โซ่พลังงาน',
+    baseStats: { hp: 3100, atk: 380, def: 170, spd: 100, critRate: 10, critDmg: 145, energy: 100, effectRes: 8, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Chain Strike', desc: 'โจมตีด้วยโซ่' },
+      skill1: { name: 'Chain Bind', desc: 'มัดศัตรูด้วยโซ่', cooldown: 10 },
+      skill2: { name: 'Dark Pull', desc: 'ดึงศัตรูเข้าใกล้', cooldown: 12 },
+      passive: { name: 'Predator', desc: 'สร้างความเสียหายเพิ่มกับศัตรูที่ถูกควบคุม 15%' },
+      ultimate: { name: 'Shadow Chain', desc: 'โซ่เงามัดศัตรูทั้งหมด' }
+    },
+    maxStars: 3, icon: '⛓️'
+  },
+  {
+    id: 7, name: 'URANA', rarity: 'R', element: 'Flame', role: 'Marksman',
+    gender: 'F', description: 'หญิงสาวผมหยิกสีส้ม ใช้ปืนพกคู่',
+    baseStats: { hp: 3000, atk: 440, def: 160, spd: 105, critRate: 14, critDmg: 160, energy: 100, effectRes: 8, penetration: 6, healing: 0 },
+    skills: {
+      basic: { name: 'Twin Shot', desc: 'ยิงปืนพกคู่' },
+      skill1: { name: 'Twin Burst', desc: 'ยิงกระสุนไฟต่อเนื่อง', cooldown: 8 },
+      skill2: { name: 'Flame Roll', desc: 'กลิ้งหลบพร้อมยิง', cooldown: 10 },
+      passive: { name: 'Lucky Trigger', desc: 'มีโอกาส 12% ยิงซ้ำ' },
+      ultimate: { name: 'Inferno Rain', desc: 'ยิงกระสุนไฟจำนวนมาก' }
+    },
+    maxStars: 3, icon: '🔥'
+  },
+  {
+    id: 8, name: 'SAIKA', rarity: 'R', element: 'Shadow', role: 'Assassin',
+    gender: 'F', description: 'หญิงนักฆ่าผมฟ้า ใช้มีดพลังงาน',
+    baseStats: { hp: 2800, atk: 460, def: 140, spd: 130, critRate: 20, critDmg: 180, energy: 100, effectRes: 5, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Energy Dagger', desc: 'แทงด้วยมีดพลังงาน' },
+      skill1: { name: 'Silent Cut', desc: 'โจมตีเงียบจากด้านหลัง', cooldown: 7 },
+      skill2: { name: 'Vanish', desc: 'หายตัวชั่วคราว', cooldown: 14 },
+      passive: { name: 'Backstab', desc: 'โจมตีด้านหลังแรงขึ้น 25%' },
+      ultimate: { name: 'Shadow Execution', desc: 'โจมตีจากเงามืดสร้างความเสียหายสูง' }
+    },
+    maxStars: 3, icon: '🗡️'
+  },
+  {
+    id: 9, name: 'NERU', rarity: 'R', element: 'Cosmic', role: 'Mage',
+    gender: 'M', description: 'เด็กชายเวทมนตร์ผมม่วง ถือหนังสือโบราณ',
+    baseStats: { hp: 2900, atk: 470, def: 145, spd: 90, critRate: 11, critDmg: 165, energy: 100, effectRes: 12, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Arcane Spark', desc: 'ประกายเวทมนตร์' },
+      skill1: { name: 'Arcane Bolt', desc: 'ลูกเวทมนตร์พื้นฐาน', cooldown: 6 },
+      skill2: { name: 'Mini Meteor', desc: 'อุกกาบาตขนาดเล็ก', cooldown: 12 },
+      passive: { name: 'Scholar', desc: 'ได้รับ Energy เพิ่มเร็วขึ้น 15%' },
+      ultimate: { name: 'Cosmic Tome', desc: 'เปิดหนังสือปล่อยพลังจักรวาล' }
+    },
+    maxStars: 3, icon: '📖'
+  },
+  {
+    id: 10, name: 'TSUKI', rarity: 'R', element: 'Frost', role: 'Fighter',
+    gender: 'M', description: 'ชายหนุ่มนักดาบผมดำ ชุดเกราะเบา',
+    baseStats: { hp: 3500, atk: 410, def: 210, spd: 100, critRate: 18, critDmg: 155, energy: 100, effectRes: 10, penetration: 5, healing: 0 },
+    skills: {
+      basic: { name: 'Moon Slash', desc: 'ฟันดาบพื้นฐาน' },
+      skill1: { name: 'Moon Slice', desc: 'ฟันเป็นรูปพระจันทร์', cooldown: 8 },
+      skill2: { name: 'Crescent Guard', desc: 'ตั้งท่าป้องกันพร้อมโต้กลับ', cooldown: 12 },
+      passive: { name: 'Focus', desc: 'เพิ่ม Critical Rate 8%' },
+      ultimate: { name: 'Lunar Blade', desc: 'ดาบแสงจันทร์โจมตีต่อเนื่อง' }
+    },
+    maxStars: 3, icon: '🌙'
+  },
+  {
+    id: 11, name: 'MOMIRA', rarity: 'R', element: 'Flame', role: 'Fighter',
+    gender: 'F', description: 'หญิงสาวผมแดง ใช้พัดเหล็ก',
+    baseStats: { hp: 3300, atk: 400, def: 185, spd: 108, critRate: 12, critDmg: 150, energy: 100, effectRes: 10, penetration: 5, healing: 0 },
+    skills: {
+      basic: { name: 'Fan Strike', desc: 'โจมตีด้วยพัด' },
+      skill1: { name: 'Burning Fan', desc: 'พัดไฟโจมตี', cooldown: 8 },
+      skill2: { name: 'Flame Dance', desc: 'ระบำไฟเพิ่ม ATK', cooldown: 14 },
+      passive: { name: 'Heat Up', desc: 'โจมตีต่อเนื่องเพิ่มความแรง' },
+      ultimate: { name: 'Inferno Fan', desc: 'พัดเพลิงขนาดใหญ่' }
+    },
+    maxStars: 3, icon: '🪭'
+  },
+  {
+    id: 12, name: 'KAELA', rarity: 'R', element: 'Radiant', role: 'Tank',
+    gender: 'F', description: 'นักรบหญิงผมทอง ใช้โล่กลม',
+    baseStats: { hp: 5000, atk: 270, def: 360, spd: 75, critRate: 5, critDmg: 130, energy: 100, effectRes: 20, penetration: 0, healing: 10 },
+    skills: {
+      basic: { name: 'Shield Bash', desc: 'กระแทกด้วยโล่' },
+      skill1: { name: 'Shield Bash', desc: 'กระแทกโล่สตันศัตรู', cooldown: 9 },
+      skill2: { name: 'Light Barrier', desc: 'สร้างโล่แสงให้ทีม', cooldown: 15 },
+      passive: { name: 'Guardian', desc: 'ลดความเสียหายให้เพื่อนใกล้ตัว 10%' },
+      ultimate: { name: 'Radiant Aegis', desc: 'โล่แสงศักดิ์สิทธิ์ปกป้องทีม' }
+    },
+    maxStars: 3, icon: '🛡️'
+  },
+  {
+    id: 13, name: 'LUNEA', rarity: 'R', element: 'Aqua', role: 'Marksman',
+    gender: 'F', description: 'สาวผมฟ้าอ่อน ใช้ธนูคริสตัล',
+    baseStats: { hp: 3100, atk: 430, def: 165, spd: 100, critRate: 16, critDmg: 160, energy: 100, effectRes: 10, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Crystal Arrow', desc: 'ยิงธนูคริสตัล' },
+      skill1: { name: 'Water Arrow', desc: 'ลูกธนูน้ำ', cooldown: 7 },
+      skill2: { name: 'Rainfall', desc: 'ฝนลูกธนู', cooldown: 13 },
+      passive: { name: 'Calm Aim', desc: 'เพิ่มความแม่นยำและ Critical 5%' },
+      ultimate: { name: 'Tidal Volley', desc: 'ยิงธนูน้ำจำนวนมาก' }
+    },
+    maxStars: 3, icon: '🏹'
+  },
+  {
+    id: 14, name: 'TOKA', rarity: 'R', element: 'Shadow', role: 'Assassin',
+    gender: 'F', description: 'เด็กสาวสายลอบเร้น ผมดำปลายม่วง ใช้เข็มพลังงาน',
+    baseStats: { hp: 2700, atk: 450, def: 135, spd: 125, critRate: 18, critDmg: 170, energy: 100, effectRes: 5, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Needle Stab', desc: 'แทงด้วยเข็ม' },
+      skill1: { name: 'Needle Storm', desc: 'พายุเข็ม', cooldown: 8 },
+      skill2: { name: 'Smoke Step', desc: 'ก้าวผ่านควัน', cooldown: 12 },
+      passive: { name: 'Hidden', desc: 'เริ่มการต่อสู้ด้วย Stealth สั้น ๆ' },
+      ultimate: { name: 'Shadow Needles', desc: 'เข็มเงาโจมตีจากทุกทิศ' }
+    },
+    maxStars: 3, icon: '💉'
+  },
+  {
+    id: 15, name: 'JINKA', rarity: 'R', element: 'Volt', role: 'Fighter',
+    gender: 'F', description: 'นักสู้หญิงผมส้ม ใช้กระบองพลังงาน',
+    baseStats: { hp: 3600, atk: 390, def: 200, spd: 95, critRate: 10, critDmg: 145, energy: 100, effectRes: 10, penetration: 5, healing: 0 },
+    skills: {
+      basic: { name: 'Staff Strike', desc: 'ตีด้วยกระบอง' },
+      skill1: { name: 'Thunder Swing', desc: 'ฟาดกระบองไฟฟ้า', cooldown: 8 },
+      skill2: { name: 'Lightning Jump', desc: 'กระโดดพร้อมสายฟ้า', cooldown: 11 },
+      passive: { name: 'Overcharge', desc: 'โจมตีต่อเนื่องสะสมพลังไฟฟ้า' },
+      ultimate: { name: 'Thunder Staff', desc: 'กระบองสายฟ้าโจมตีวงกว้าง' }
+    },
+    maxStars: 3, icon: '⚡'
+  },
+  {
+    id: 16, name: 'RUDEN', rarity: 'R', element: 'Flame', role: 'Mage',
+    gender: 'M', description: 'เด็กชายผมแดง ใช้ไม้เท้าพลังเวท',
+    baseStats: { hp: 2900, atk: 460, def: 140, spd: 88, critRate: 10, critDmg: 160, energy: 100, effectRes: 10, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Ember', desc: 'ลูกไฟเล็ก' },
+      skill1: { name: 'Ember Ball', desc: 'ลูกไฟ', cooldown: 7 },
+      skill2: { name: 'Fire Wall', desc: 'กำแพงไฟ', cooldown: 13 },
+      passive: { name: 'Young Mage', desc: 'เพิ่ม Magic Attack 8%' },
+      ultimate: { name: 'Flame Pillar', desc: 'เสาเพลิงพุ่งขึ้น' }
+    },
+    maxStars: 3, icon: '🔮'
+  },
+  {
+    id: 17, name: 'MARIEL', rarity: 'R', element: 'Radiant', role: 'Support',
+    gender: 'F', description: 'หญิงนักบวชผมเงิน ใช้คทารักษา',
+    baseStats: { hp: 3400, atk: 280, def: 190, spd: 90, critRate: 5, critDmg: 130, energy: 100, effectRes: 15, penetration: 0, healing: 55 },
+    skills: {
+      basic: { name: 'Light Touch', desc: 'โจมตีด้วยแสง' },
+      skill1: { name: 'Light Heal', desc: 'รักษา HP เป้าหมาย', cooldown: 8 },
+      skill2: { name: 'Holy Pulse', desc: 'คลื่นแสงรักษาทีม', cooldown: 14 },
+      passive: { name: 'Mercy', desc: 'เพิ่ม Healing Power 12%' },
+      ultimate: { name: 'Divine Grace', desc: 'รักษาและล้าง Debuff ทั้งทีม' }
+    },
+    maxStars: 3, icon: '✨'
+  },
+  {
+    id: 18, name: 'SHINEN', rarity: 'R', element: 'Gale', role: 'Assassin',
+    gender: 'M', description: 'ชายหนุ่มผมขาว ใช้ดาบสั้น',
+    baseStats: { hp: 2900, atk: 440, def: 150, spd: 128, critRate: 17, critDmg: 165, energy: 100, effectRes: 5, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Quick Slash', desc: 'ฟันเร็ว' },
+      skill1: { name: 'Wind Pierce', desc: 'แทงทะลุด้วยลม', cooldown: 7 },
+      skill2: { name: 'Air Dash', desc: 'พุ่งตัวในอากาศ', cooldown: 10 },
+      passive: { name: 'Swift Edge', desc: 'เพิ่ม Attack Speed 10%' },
+      ultimate: { name: 'Gale Blade', desc: 'ดาบลมโจมตีหลายครั้งรวดเร็ว' }
+    },
+    maxStars: 3, icon: '💨'
+  },
+  {
+    id: 19, name: 'VIVIAN', rarity: 'R', element: 'Aqua', role: 'Marksman',
+    gender: 'F', description: 'หญิงโจรสลัดผมม่วง ใช้ปืนใหญ่แขน',
+    baseStats: { hp: 3300, atk: 410, def: 175, spd: 92, critRate: 12, critDmg: 155, energy: 100, effectRes: 10, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Cannon Shot', desc: 'ยิงปืนใหญ่' },
+      skill1: { name: 'Aqua Cannon', desc: 'ยิงกระสุนน้ำ', cooldown: 9 },
+      skill2: { name: 'Splash Bomb', desc: 'ระเบิดน้ำ', cooldown: 12 },
+      passive: { name: 'Treasure Hunter', desc: 'มีโอกาส 10% ได้รับ Energy เพิ่ม' },
+      ultimate: { name: 'Tidal Cannon', desc: 'ยิงปืนใหญ่น้ำขนาดใหญ่' }
+    },
+    maxStars: 3, icon: '💣'
+  },
+  {
+    id: 20, name: 'NANA', rarity: 'R', element: 'Cosmic', role: 'Mage',
+    gender: 'F', description: 'สาวนักเวทผมฟ้า ใช้ลูกแก้วเวท',
+    baseStats: { hp: 2800, atk: 470, def: 140, spd: 95, critRate: 11, critDmg: 160, energy: 100, effectRes: 12, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Star Spark', desc: 'ประกายดาว' },
+      skill1: { name: 'Star Bolt', desc: 'ลูกดาว', cooldown: 7 },
+      skill2: { name: 'Gravity Orb', desc: 'ลูกแก้วแรงโน้มถ่วง', cooldown: 13 },
+      passive: { name: 'Tiny Genius', desc: 'ลด Cooldown Skill เล็กน้อย' },
+      ultimate: { name: 'Stellar Burst', desc: 'ระเบิดดาวสร้างความเสียหาย' }
+    },
+    maxStars: 3, icon: '🌟'
+  },
+
+  // ==================== SR (21-35) ====================
+  {
+    id: 21, name: 'YORA', rarity: 'SR', element: 'Shadow', role: 'Assassin',
+    gender: 'F', description: 'หญิงนักล่าปีศาจ ผมดำยาว เสื้อเกราะสีดำทอง ใช้ดาบโซ่',
+    baseStats: { hp: 3800, atk: 520, def: 200, spd: 115, critRate: 18, critDmg: 175, energy: 100, effectRes: 10, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Chain Slash', desc: 'ฟันด้วยดาบโซ่' },
+      skill1: { name: 'Chain Blade', desc: 'ดาบโซ่โจมตีระยะไกล', cooldown: 8 },
+      skill2: { name: 'Hunter Rush', desc: 'พุ่งเข้าใส่ศัตรู', cooldown: 11 },
+      passive: { name: 'Hunter Instinct', desc: 'เพิ่ม Damage ต่อศัตรู Elite 20%' },
+      ultimate: { name: 'Demon Hunter', desc: 'ล่าปีศาจด้วยดาบโซ่ต่อเนื่อง' }
+    },
+    maxStars: 4, icon: '🔗'
+  },
+  {
+    id: 22, name: 'SANRO', rarity: 'SR', element: 'Flame', role: 'Fighter',
+    gender: 'M', description: 'ชายพ่อครัวนักรบ ผมดำหยักศก ใช้มีดคู่',
+    baseStats: { hp: 4000, atk: 480, def: 220, spd: 100, critRate: 14, critDmg: 160, energy: 100, effectRes: 12, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Kitchen Knife', desc: 'ฟันด้วยมีด' },
+      skill1: { name: 'Chef Slash', desc: 'ฟันมีดไฟ', cooldown: 8 },
+      skill2: { name: 'Burning Kick', desc: 'เตะเพลิง', cooldown: 10 },
+      passive: { name: 'Battle Cook', desc: 'เพิ่ม ATK หลังหลบสำเร็จ 15%' },
+      ultimate: { name: 'Flambé Strike', desc: 'โจมตีพร้อมเปลวไฟ' }
+    },
+    maxStars: 4, icon: '🔪'
+  },
+  {
+    id: 23, name: 'RENKA', rarity: 'SR', element: 'Flame', role: 'Fighter',
+    gender: 'F', description: 'หญิงนักดาบผมแดง ชุดเกราะสีขาวแดง ใช้ดาบยาว',
+    baseStats: { hp: 4200, atk: 500, def: 230, spd: 98, critRate: 15, critDmg: 165, energy: 100, effectRes: 10, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Crimson Slash', desc: 'ฟันดาบแดง' },
+      skill1: { name: 'Crimson Cut', desc: 'ฟันดาบเพลิง', cooldown: 8 },
+      skill2: { name: 'Burning Wheel', desc: 'วงล้อเพลิง', cooldown: 13 },
+      passive: { name: 'Blood Heat', desc: 'HP ต่ำทำ Damage สูงขึ้น' },
+      ultimate: { name: 'Crimson Storm', desc: 'พายุดาบแดง' }
+    },
+    maxStars: 4, icon: '⚔️'
+  },
+  {
+    id: 24, name: 'TOKI', rarity: 'SR', element: 'Volt', role: 'Mage',
+    gender: 'M', description: 'เด็กชายผมเขียว ใช้คทาสายฟ้า',
+    baseStats: { hp: 3400, atk: 540, def: 170, spd: 95, critRate: 12, critDmg: 170, energy: 100, effectRes: 12, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Spark', desc: 'ประกายไฟฟ้า' },
+      skill1: { name: 'Thunder Spear', desc: 'หอกสายฟ้า', cooldown: 8 },
+      skill2: { name: 'Electric Field', desc: 'สนามไฟฟ้า', cooldown: 14 },
+      passive: { name: 'Static Charge', desc: 'ศัตรูมีโอกาสติด Shock' },
+      ultimate: { name: 'Thunder Dominion', desc: 'ครองสนามด้วยสายฟ้า' }
+    },
+    maxStars: 4, icon: '⚡'
+  },
+  {
+    id: 25, name: 'KRAFIT', rarity: 'SR', element: 'Earth', role: 'Mage',
+    gender: 'M', description: 'ชายชรานักเวท เสื้อคลุมสีน้ำเงิน ใช้คทาหิน',
+    baseStats: { hp: 3600, atk: 510, def: 190, spd: 80, critRate: 10, critDmg: 160, energy: 100, effectRes: 18, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Stone Bolt', desc: 'ลูกหิน' },
+      skill1: { name: 'Stone Lance', desc: 'หอกหิน', cooldown: 9 },
+      skill2: { name: 'Rock Prison', desc: 'ขังศัตรูด้วยหิน', cooldown: 14 },
+      passive: { name: 'Ancient Magic', desc: 'เพิ่มพลัง Skill 12%' },
+      ultimate: { name: 'Earthen Cataclysm', desc: 'แผ่นดินไหวเวทมนตร์' }
+    },
+    maxStars: 4, icon: '🪨'
+  },
+  {
+    id: 26, name: 'MOMON', rarity: 'SR', element: 'Cosmic', role: 'Controller',
+    gender: 'F', description: 'หญิงสาวผมม่วง ใช้ระเบิดเวทมนตร์',
+    baseStats: { hp: 3500, atk: 500, def: 175, spd: 100, critRate: 13, critDmg: 165, energy: 100, effectRes: 10, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Chaos Spark', desc: 'ประกายความโกลาหล' },
+      skill1: { name: 'Chaos Bomb', desc: 'ระเบิดเวท', cooldown: 9 },
+      skill2: { name: 'Warp Mine', desc: 'กับดักวาร์ป', cooldown: 13 },
+      passive: { name: 'Unstable', desc: 'การโจมตีมีโอกาสเกิดระเบิดรอง' },
+      ultimate: { name: 'Chaos Field', desc: 'สนามความโกลาหล' }
+    },
+    maxStars: 4, icon: '💥'
+  },
+  {
+    id: 27, name: 'ISHEN', rarity: 'SR', element: 'Frost', role: 'Marksman',
+    gender: 'M', description: 'นักธนูชายผมขาว',
+    baseStats: { hp: 3600, atk: 530, def: 180, spd: 105, critRate: 20, critDmg: 175, energy: 100, effectRes: 10, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Ice Arrow', desc: 'ลูกธนูน้ำแข็ง' },
+      skill1: { name: 'Frost Arrow', desc: 'ลูกธนูน้ำแข็งแทงทะลุ', cooldown: 8 },
+      skill2: { name: 'Piercing Volley', desc: 'ยิงลูกธนูต่อเนื่อง', cooldown: 12 },
+      passive: { name: 'Perfect Aim', desc: 'เพิ่ม Critical Rate 10%' },
+      ultimate: { name: 'Frozen Rain', desc: 'ฝนลูกธนูน้ำแข็ง' }
+    },
+    maxStars: 4, icon: '🏹'
+  },
+  {
+    id: 28, name: 'GENRO', rarity: 'SR', element: 'Radiant', role: 'Mage',
+    gender: 'M', description: 'ชายร่างผอมผมทอง นักเวทสายพลัง',
+    baseStats: { hp: 3400, atk: 550, def: 165, spd: 90, critRate: 12, critDmg: 170, energy: 100, effectRes: 12, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Light Bolt', desc: 'ลูกแสง' },
+      skill1: { name: 'Solar Ray', desc: 'ลำแสงสุริยะ', cooldown: 8 },
+      skill2: { name: 'Light Burst', desc: 'ระเบิดแสง', cooldown: 13 },
+      passive: { name: 'Mana Master', desc: 'ลด Energy cost 10%' },
+      ultimate: { name: 'Solar Flare', desc: 'เปลวสุริยะ' }
+    },
+    maxStars: 4, icon: '☀️'
+  },
+  {
+    id: 29, name: 'ELIA', rarity: 'SR', element: 'Aqua', role: 'Support',
+    gender: 'F', description: 'หญิงนักเวทผมฟ้า ใช้คทาจันทร์',
+    baseStats: { hp: 3800, atk: 350, def: 200, spd: 92, critRate: 8, critDmg: 140, energy: 100, effectRes: 15, penetration: 0, healing: 60 },
+    skills: {
+      basic: { name: 'Water Orb', desc: 'ลูกน้ำ' },
+      skill1: { name: 'Moon Water', desc: 'น้ำจันทร์รักษา', cooldown: 8 },
+      skill2: { name: 'Healing Tide', desc: 'คลื่นรักษา', cooldown: 14 },
+      passive: { name: 'Water Blessing', desc: 'เพิ่ม Healing 15%' },
+      ultimate: { name: 'Lunar Tide', desc: 'คลื่นจันทร์รักษาทั้งทีม' }
+    },
+    maxStars: 4, icon: '🌊'
+  },
+  {
+    id: 30, name: 'GALEO', rarity: 'SR', element: 'Earth', role: 'Tank',
+    gender: 'M', description: 'นักรบชายเกราะหนัก ใช้หอก',
+    baseStats: { hp: 5800, atk: 320, def: 420, spd: 65, critRate: 5, critDmg: 130, energy: 100, effectRes: 25, penetration: 0, healing: 0 },
+    skills: {
+      basic: { name: 'Spear Thrust', desc: 'แทงหอก' },
+      skill1: { name: 'Spear Charge', desc: 'พุ่งแทงหอก', cooldown: 9 },
+      skill2: { name: 'Fortress Stance', desc: 'ท่าตั้งรับเพิ่ม DEF', cooldown: 15 },
+      passive: { name: 'Iron Will', desc: 'ต้านทาน Control 20%' },
+      ultimate: { name: 'Fortress Breaker', desc: 'หอกทำลายป้อม' }
+    },
+    maxStars: 4, icon: '🗡️'
+  },
+  {
+    id: 31, name: 'INOSHA', rarity: 'SR', element: 'Gale', role: 'Fighter',
+    gender: 'F', description: 'หญิงนักสู้หน้ากากสัตว์ ใช้ขวานคู่',
+    baseStats: { hp: 4100, atk: 510, def: 210, spd: 110, critRate: 16, critDmg: 170, energy: 100, effectRes: 10, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Axe Swing', desc: 'ฟาดขวาน' },
+      skill1: { name: 'Beast Rush', desc: 'พุ่งตัวอย่างสัตว์ป่า', cooldown: 8 },
+      skill2: { name: 'Wild Spin', desc: 'หมุนตัวฟาดขวาน', cooldown: 12 },
+      passive: { name: 'Berserk Spirit', desc: 'HP ต่ำเพิ่ม ATK และ SPD' },
+      ultimate: { name: 'Beast Rampage', desc: 'คลุ้มคลั่งโจมตีต่อเนื่อง' }
+    },
+    maxStars: 4, icon: '🪓'
+  },
+  {
+    id: 32, name: 'FRANA', rarity: 'SR', element: 'Frost', role: 'Fighter',
+    gender: 'F', description: 'หญิงนักดาบเวทมนตร์ ผมฟ้าเงิน',
+    baseStats: { hp: 3900, atk: 520, def: 200, spd: 100, critRate: 15, critDmg: 165, energy: 100, effectRes: 12, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Crystal Slash', desc: 'ฟันดาบคริสตัล' },
+      skill1: { name: 'Crystal Blade', desc: 'ดาบคริสตัล', cooldown: 8 },
+      skill2: { name: 'Ice Rain', desc: 'ฝนน้ำแข็ง', cooldown: 13 },
+      passive: { name: 'Frozen Heart', desc: 'ลดความเสียหายจาก Flame 20%' },
+      ultimate: { name: 'Crystal Storm', desc: 'พายุคริสตัล' }
+    },
+    maxStars: 4, icon: '💎'
+  },
+  {
+    id: 33, name: 'YORIN', rarity: 'SR', element: 'Radiant', role: 'Fighter',
+    gender: 'M', description: 'ชายผมขาว นักดาบโบราณ',
+    baseStats: { hp: 4300, atk: 490, def: 240, spd: 95, critRate: 14, critDmg: 160, energy: 100, effectRes: 12, penetration: 8, healing: 0 },
+    skills: {
+      basic: { name: 'Ancient Slash', desc: 'ฟันดาบโบราณ' },
+      skill1: { name: 'Sun Slash', desc: 'ฟันดาบสุริยะ', cooldown: 8 },
+      skill2: { name: 'Dawn Step', desc: 'ก้าวรุ่งอรุณ', cooldown: 11 },
+      passive: { name: 'Master Swordsman', desc: 'เพิ่ม Damage ดาบ 12%' },
+      ultimate: { name: 'Solar Sword Art', desc: 'ศิลปะดาบสุริยะ' }
+    },
+    maxStars: 4, icon: '⚔️'
+  },
+  {
+    id: 34, name: 'SOIFRA', rarity: 'SR', element: 'Volt', role: 'Assassin',
+    gender: 'F', description: 'หญิงนักฆ่าผมเขียว ใช้ปืนพลังงาน',
+    baseStats: { hp: 3200, atk: 540, def: 160, spd: 120, critRate: 20, critDmg: 180, energy: 100, effectRes: 8, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Energy Bullet', desc: 'ยิงกระสุนพลังงาน' },
+      skill1: { name: 'Poison Bullet', desc: 'กระสุนพิษ', cooldown: 8 },
+      skill2: { name: 'Vanishing Shot', desc: 'ยิงแล้วหายตัว', cooldown: 12 },
+      passive: { name: 'Toxic Mark', desc: 'ศัตรูที่ถูกยิงติดพิษ' },
+      ultimate: { name: 'Venom Barrage', desc: 'ยิงกระสุนพิษจำนวนมาก' }
+    },
+    maxStars: 4, icon: '🔫'
+  },
+  {
+    id: 35, name: 'KIRA', rarity: 'SR', element: 'Aqua', role: 'Assassin',
+    gender: 'F', description: 'หญิงโจรสลัดผมแดง ใช้ดาบเรเปียร์',
+    baseStats: { hp: 3500, atk: 510, def: 180, spd: 118, critRate: 18, critDmg: 175, energy: 100, effectRes: 8, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Rapier Thrust', desc: 'แทงเรเปียร์' },
+      skill1: { name: 'Ocean Pierce', desc: 'แทงทะลุด้วยพลังน้ำ', cooldown: 8 },
+      skill2: { name: 'Pirate Rush', desc: 'พุ่งตัวแบบโจรสลัด', cooldown: 10 },
+      passive: { name: 'Sea Raider', desc: 'เพิ่ม Damage ต่อศัตรูที่มี Debuff' },
+      ultimate: { name: 'Tidal Duel', desc: 'ดวลดาบกลางคลื่น' }
+    },
+    maxStars: 4, icon: '🗡️'
+  },
+
+  // ==================== SSR (36-45) ====================
+  {
+    id: 36, name: 'RYUKA', rarity: 'SSR', element: 'Flame', role: 'Fighter',
+    gender: 'M', description: 'ชายราชานักรบผมแดง ใช้ดาบพลังงานขนาดใหญ่',
+    baseStats: { hp: 5200, atk: 620, def: 280, spd: 100, critRate: 16, critDmg: 180, energy: 100, effectRes: 15, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Dragon Slash', desc: 'ฟันดาบมังกร' },
+      skill1: { name: 'Dragon Breaker', desc: 'ดาบทำลายมังกร', cooldown: 9 },
+      skill2: { name: 'Burning Horizon', desc: 'เส้นขอบฟ้าเพลิง', cooldown: 14 },
+      passive: { name: 'Dragon Soul', desc: 'เพิ่ม ATK เมื่อ HP สูง' },
+      ultimate: { name: 'Crimson Dragon', desc: 'มังกรแดงปรากฏตัวโจมตี' }
+    },
+    maxStars: 5, icon: '🐉'
+  },
+  {
+    id: 37, name: 'GYOMA', rarity: 'SSR', element: 'Earth', role: 'Tank',
+    gender: 'M', description: 'นักรบยักษ์สวมเกราะหิน ใช้อาวุธคู่ขนาดใหญ่',
+    baseStats: { hp: 7200, atk: 400, def: 520, spd: 60, critRate: 5, critDmg: 140, energy: 100, effectRes: 30, penetration: 0, healing: 0 },
+    skills: {
+      basic: { name: 'Titan Blow', desc: 'ต่อยยักษ์' },
+      skill1: { name: 'Titan Smash', desc: 'ฟาดอาวุธยักษ์', cooldown: 10 },
+      skill2: { name: 'Mountain Guard', desc: 'ตั้งท่าเป็นภูเขา', cooldown: 16 },
+      passive: { name: 'Immovable', desc: 'ต้านทาน Knockback และ Stun' },
+      ultimate: { name: 'Earthquake', desc: 'แผ่นดินไหวทำลายล้าง' }
+    },
+    maxStars: 5, icon: '🗿'
+  },
+  {
+    id: 38, name: 'YURO', rarity: 'SSR', element: 'Shadow', role: 'Fighter',
+    gender: 'M', description: 'ชายวัยรุ่นผมดำ ใช้ถุงมือพลังงาน',
+    baseStats: { hp: 4800, atk: 600, def: 250, spd: 110, critRate: 18, critDmg: 185, energy: 100, effectRes: 12, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Dark Punch', desc: 'หมัดเงา' },
+      skill1: { name: 'Black Impact', desc: 'หมัดดำกระแทก', cooldown: 8 },
+      skill2: { name: 'Spirit Burst', desc: 'ระเบิดวิญญาณ', cooldown: 13 },
+      passive: { name: 'Cursed Fury', desc: 'เมื่อถูกโจมตีเพิ่ม ATK ชั่วคราว' },
+      ultimate: { name: 'Abyssal Strike', desc: 'หมัดจากขุมนรก' }
+    },
+    maxStars: 5, icon: '👊'
+  },
+  {
+    id: 39, name: 'AISHARA', rarity: 'SSR', element: 'Cosmic', role: 'Mage',
+    gender: 'F', description: 'หญิงสาวผมชมพู ใช้กระบองพลังจิต',
+    baseStats: { hp: 4200, atk: 650, def: 200, spd: 95, critRate: 14, critDmg: 180, energy: 100, effectRes: 15, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Psychic Bolt', desc: 'ลูกพลังจิต' },
+      skill1: { name: 'Psychic Crash', desc: 'กระแทกพลังจิต', cooldown: 8 },
+      skill2: { name: 'Gravity Crush', desc: 'บดขยี้ด้วยแรงโน้มถ่วง', cooldown: 14 },
+      passive: { name: 'Psychic Flow', desc: 'Skill มีโอกาสไม่ใช้ Energy' },
+      ultimate: { name: 'Meteor Mind', desc: 'อุกกาบาตจากจิตใจ' }
+    },
+    maxStars: 5, icon: '🧠'
+  },
+  {
+    id: 40, name: 'ICHIRO', rarity: 'SSR', element: 'Radiant', role: 'Fighter',
+    gender: 'M', description: 'นักดาบชายผมส้ม เกราะสีดำ',
+    baseStats: { hp: 5000, atk: 610, def: 270, spd: 105, critRate: 17, critDmg: 180, energy: 100, effectRes: 12, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Soul Slash', desc: 'ฟันวิญญาณ' },
+      skill1: { name: 'Soul Cutter', desc: 'ตัดวิญญาณ', cooldown: 8 },
+      skill2: { name: 'Energy Crescent', desc: 'พระจันทร์เสี้ยวพลังงาน', cooldown: 12 },
+      passive: { name: 'Soul Pressure', desc: 'ศัตรูใกล้ตัว SPD ลดลง' },
+      ultimate: { name: 'Astral Blade', desc: 'ดาบดาราศาสตร์' }
+    },
+    maxStars: 5, icon: '⚔️'
+  },
+  {
+    id: 41, name: 'HIMEL', rarity: 'SSR', element: 'Radiant', role: 'Tank',
+    gender: 'M', description: 'นักดาบผู้พิทักษ์วัยชรา ผมเงิน',
+    baseStats: { hp: 6500, atk: 450, def: 450, spd: 70, critRate: 8, critDmg: 150, energy: 100, effectRes: 25, penetration: 5, healing: 15 },
+    skills: {
+      basic: { name: 'Hero Slash', desc: 'ฟันวีรบุรุษ' },
+      skill1: { name: 'Heroic Slash', desc: 'ฟันวีรบุรุษ', cooldown: 9 },
+      skill2: { name: 'Guardian Light', desc: 'แสงผู้พิทักษ์', cooldown: 15 },
+      passive: { name: 'Legendary Resolve', desc: 'เมื่อ HP ต่ำ DEF เพิ่มขึ้นมาก' },
+      ultimate: { name: 'Final Oath', desc: 'คำสาบานสุดท้ายปกป้องทีม' }
+    },
+    maxStars: 5, icon: '🛡️'
+  },
+  {
+    id: 42, name: 'JINRO', rarity: 'SSR', element: 'Shadow', role: 'Summoner',
+    gender: 'M', description: 'ชายหนุ่มควบคุมเงา เสื้อคลุมดำ',
+    baseStats: { hp: 4500, atk: 580, def: 230, spd: 100, critRate: 14, critDmg: 170, energy: 100, effectRes: 15, penetration: 10, healing: 0 },
+    skills: {
+      basic: { name: 'Shadow Cut', desc: 'ตัดเงา' },
+      skill1: { name: 'Shadow Spear', desc: 'หอกเงา', cooldown: 8 },
+      skill2: { name: 'Shadow Summon', desc: 'เรียกเงาช่วยรบ', cooldown: 16 },
+      passive: { name: 'Shadow Growth', desc: 'เงาที่เรียกแข็งแกร่งขึ้นตามเวลา' },
+      ultimate: { name: 'Army of Night', desc: 'กองทัพเงาแห่งราตรี' }
+    },
+    maxStars: 5, icon: '🌑'
+  },
+  {
+    id: 43, name: 'RUDEN PRIME', rarity: 'SSR', element: 'Cosmic', role: 'Mage',
+    gender: 'M', description: 'จอมเวทอัจฉริยะ เสื้อคลุมดำแดง',
+    baseStats: { hp: 4000, atk: 680, def: 190, spd: 92, critRate: 15, critDmg: 185, energy: 100, effectRes: 15, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Arcane Shot', desc: 'ยิงเวท' },
+      skill1: { name: 'Arcane Cannon', desc: 'ปืนใหญ่เวท', cooldown: 9 },
+      skill2: { name: 'Meteor Prison', desc: 'ขังด้วยอุกกาบาต', cooldown: 15 },
+      passive: { name: 'Grand Sorcery', desc: 'เพิ่มพลัง Skill ทั้งหมด 15%' },
+      ultimate: { name: 'World Collapse', desc: 'ยุบโลกด้วยเวทมนตร์' }
+    },
+    maxStars: 5, icon: '🌌'
+  },
+  {
+    id: 44, name: 'EMILIA', rarity: 'SSR', element: 'Frost', role: 'Mage',
+    gender: 'F', description: 'หญิงนักเวทผมเงิน ชุดเกราะสีขาวฟ้า',
+    baseStats: { hp: 4300, atk: 640, def: 210, spd: 95, critRate: 14, critDmg: 180, energy: 100, effectRes: 15, penetration: 12, healing: 5 },
+    skills: {
+      basic: { name: 'Ice Lance', desc: 'หอกน้ำแข็ง' },
+      skill1: { name: 'Crystal Lance', desc: 'หอกคริสตัล', cooldown: 8 },
+      skill2: { name: 'Frozen Garden', desc: 'สวนน้ำแข็ง', cooldown: 14 },
+      passive: { name: 'Spirit Pact', desc: 'เมื่อใช้ Skill มีโอกาสฟื้น Energy' },
+      ultimate: { name: 'Eternal Winter', desc: 'ฤดูหนาวชั่วนิรันดร์' }
+    },
+    maxStars: 5, icon: '❄️'
+  },
+  {
+    id: 45, name: 'LORIAN', rarity: 'SSR', element: 'Volt', role: 'Marksman',
+    gender: 'M', description: 'ชายสายลับผมทอง ชุดสูทสีดำ ใช้ปืนพลังงาน',
+    baseStats: { hp: 4100, atk: 630, def: 200, spd: 112, critRate: 22, critDmg: 190, energy: 100, effectRes: 10, penetration: 18, healing: 0 },
+    skills: {
+      basic: { name: 'Precision Fire', desc: 'ยิงแม่นยำ' },
+      skill1: { name: 'Precision Shot', desc: 'ยิงจุดสำคัญ', cooldown: 7 },
+      skill2: { name: 'Tactical Mine', desc: 'วางกับดัก', cooldown: 12 },
+      passive: { name: 'Strategist', desc: 'เพิ่ม Damage ต่อศัตรูที่มี Debuff 20%' },
+      ultimate: { name: 'Zero Escape', desc: 'ไม่มีทางหนี — ยิงต่อเนื่อง' }
+    },
+    maxStars: 5, icon: '🎯'
+  },
+
+  // ==================== SSR+ (46-55) ====================
+  {
+    id: 46, name: 'AKRION', rarity: 'SSR+', element: 'Aqua', role: 'Tank',
+    gender: 'M', description: 'จักรพรรดิแห่งท้องทะเล ร่างสูงใหญ่ เสื้อคลุมแดง ใช้หอกสามง่าม',
+    baseStats: { hp: 8000, atk: 520, def: 480, spd: 75, critRate: 10, critDmg: 160, energy: 100, effectRes: 25, penetration: 8, healing: 10 },
+    skills: {
+      basic: { name: 'Trident Thrust', desc: 'แทงสามง่าม' },
+      skill1: { name: 'Ocean Dominion', desc: 'ครองท้องทะเล', cooldown: 10 },
+      skill2: { name: 'Emperor Spear', desc: 'หอกจักรพรรดิ', cooldown: 14 },
+      passive: { name: 'Sea Emperor', desc: 'เมื่อ HP < 50% เพิ่ม Damage และ Resistance' },
+      ultimate: { name: 'Leviathan Crown', desc: 'มงกุฎเลวีอาธาน — เรียกเจ้าทะเล' }
+    },
+    maxStars: 6, icon: '🔱'
+  },
+  {
+    id: 47, name: 'MURZAN', rarity: 'SSR+', element: 'Shadow', role: 'Fighter',
+    gender: 'M', description: 'ราชันอมตะ ผิวซีด ดวงตาสีแดง เสื้อคลุมดำ',
+    baseStats: { hp: 7000, atk: 600, def: 350, spd: 95, critRate: 15, critDmg: 180, energy: 100, effectRes: 20, penetration: 12, healing: 20 },
+    skills: {
+      basic: { name: 'Blood Slash', desc: 'ฟันเลือด' },
+      skill1: { name: 'Blood Spear', desc: 'หอกเลือด', cooldown: 9 },
+      skill2: { name: 'Regeneration', desc: 'ฟื้นเนื้อหนัง', cooldown: 16 },
+      passive: { name: 'Eternal Flesh', desc: 'เมื่อถูกโจมตีมีโอกาสฟื้น HP' },
+      ultimate: { name: 'Crimson Eclipse', desc: 'สุริยุปราคาแดง — ดูดเลือดศัตรู' }
+    },
+    maxStars: 6, icon: '🩸'
+  },
+  {
+    id: 48, name: 'SUKARO', rarity: 'SSR+', element: 'Flame', role: 'Fighter',
+    gender: 'M', description: 'จอมอสูรสี่แขน หน้ากากกระโหลก',
+    baseStats: { hp: 6500, atk: 680, def: 300, spd: 100, critRate: 16, critDmg: 185, energy: 100, effectRes: 15, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Demon Claw', desc: 'กรงเล็บอสูร' },
+      skill1: { name: 'Fourfold Destruction', desc: 'ทำลายสี่ทิศ', cooldown: 9 },
+      skill2: { name: 'Demon Domain', desc: 'ดินแดนอสูร', cooldown: 15 },
+      passive: { name: 'Demon King', desc: 'ลด Cooldown เมื่อกำจัดศัตรู' },
+      ultimate: { name: 'Hell Cathedral', desc: 'วิหารนรก — โจมตีทำลายล้าง' }
+    },
+    maxStars: 6, icon: '😈'
+  },
+  {
+    id: 49, name: 'KURUSHA', rarity: 'SSR+', element: 'Cosmic', role: 'Controller',
+    gender: 'F', description: 'หญิงนักพลังจิต ผมขาวปลายชมพู',
+    baseStats: { hp: 4800, atk: 620, def: 220, spd: 100, critRate: 14, critDmg: 175, energy: 100, effectRes: 18, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Mind Bolt', desc: 'ลูกจิต' },
+      skill1: { name: 'Psychic Lance', desc: 'หอกพลังจิต', cooldown: 8 },
+      skill2: { name: 'Reality Distortion', desc: 'บิดเบือนความจริง', cooldown: 15 },
+      passive: { name: 'Mind Break', desc: 'มีโอกาสทำให้ศัตรูสับสน' },
+      ultimate: { name: 'Mental Collapse', desc: 'จิตใจพังทลาย' }
+    },
+    maxStars: 6, icon: '🧠'
+  },
+  {
+    id: 50, name: 'YUWAEL', rarity: 'SSR+', element: 'Cosmic', role: 'Fighter',
+    gender: 'M', description: 'ราชันพลังมิติ ร่างสูง สวมเกราะดำทอง',
+    baseStats: { hp: 6000, atk: 650, def: 320, spd: 105, critRate: 16, critDmg: 185, energy: 100, effectRes: 22, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Dimension Cut', desc: 'ตัดมิติ' },
+      skill1: { name: 'Dimension Slash', desc: 'ฟันมิติ', cooldown: 9 },
+      skill2: { name: 'Time Prison', desc: 'ขังเวลา', cooldown: 16 },
+      passive: { name: 'Immortal Authority', desc: 'ได้รับผลกระทบจาก Debuff ลดลงอย่างมาก' },
+      ultimate: { name: 'Rewrite', desc: 'เขียนกฎใหม่ของสนาม' }
+    },
+    maxStars: 6, icon: '🌀'
+  },
+  {
+    id: 51, name: 'FREYRA', rarity: 'SSR+', element: 'Radiant', role: 'Mage',
+    gender: 'F', description: 'จอมเวทหญิงผู้หยุดยั้งจอมมาร ผมทองเงิน ชุดเกราะสีขาว',
+    baseStats: { hp: 5000, atk: 700, def: 250, spd: 95, critRate: 15, critDmg: 185, energy: 100, effectRes: 18, penetration: 15, healing: 10 },
+    skills: {
+      basic: { name: 'Holy Bolt', desc: 'ลูกแสงศักดิ์สิทธิ์' },
+      skill1: { name: 'Holy Beam', desc: 'ลำแสงศักดิ์สิทธิ์', cooldown: 8 },
+      skill2: { name: 'Demon Seal', desc: 'ผนึกอสูร', cooldown: 14 },
+      passive: { name: 'Arcane Master', desc: 'Skill มีโอกาสไม่ใช้ Energy' },
+      ultimate: { name: 'Celestial Verdict', desc: 'คำพิพากษาแห่งสวรรค์' }
+    },
+    maxStars: 6, icon: '👼'
+  },
+  {
+    id: 52, name: 'JINRO MONARCH', rarity: 'SSR+', element: 'Shadow', role: 'Summoner',
+    gender: 'M', description: 'ราชันกองทัพเงา เกราะดำม่วง มีเงาจำนวนมากอยู่ด้านหลัง',
+    baseStats: { hp: 5500, atk: 600, def: 280, spd: 100, critRate: 14, critDmg: 175, energy: 100, effectRes: 18, penetration: 12, healing: 0 },
+    skills: {
+      basic: { name: 'Monarch Cut', desc: 'ตัดราชัน' },
+      skill1: { name: 'Monarch Slash', desc: 'ฟันราชันเงา', cooldown: 9 },
+      skill2: { name: 'Shadow Army', desc: 'เรียกกองทัพเงา', cooldown: 18 },
+      passive: { name: 'Eternal Legion', desc: 'ศัตรูที่ตายมีโอกาสกลายเป็น Shadow Minion' },
+      ultimate: { name: "Monarch's Apocalypse", desc: 'วันสิ้นโลกแห่งราชันเงา' }
+    },
+    maxStars: 6, icon: '👑'
+  },
+  {
+    id: 53, name: 'ORSTEN', rarity: 'SSR+', element: 'Cosmic', role: 'Mage',
+    gender: 'M', description: 'จอมเวทมังกร ชายผมแดงเข้ม ใช้ดาบเวทมนตร์',
+    baseStats: { hp: 5200, atk: 680, def: 260, spd: 98, critRate: 15, critDmg: 180, energy: 100, effectRes: 20, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Dragon Magic', desc: 'เวทมังกร' },
+      skill1: { name: 'Dragon Magic', desc: 'เวทมังกร', cooldown: 9 },
+      skill2: { name: 'Spatial Rupture', desc: 'ฉีกมิติ', cooldown: 15 },
+      passive: { name: 'Dragon Sage', desc: 'ต้านทานการควบคุม' },
+      ultimate: { name: 'World Dragon', desc: 'มังกรโลกปรากฏ' }
+    },
+    maxStars: 6, icon: '🐉'
+  },
+  {
+    id: 54, name: 'RHEIN', rarity: 'SSR+', element: 'Radiant', role: 'Tank',
+    gender: 'M', description: 'อัศวินแห่งรุ่งอรุณ ผมทอง เสื้อเกราะสีขาวทอง',
+    baseStats: { hp: 7500, atk: 480, def: 500, spd: 80, critRate: 10, critDmg: 160, energy: 100, effectRes: 25, penetration: 5, healing: 15 },
+    skills: {
+      basic: { name: 'Dawn Slash', desc: 'ฟันรุ่งอรุณ' },
+      skill1: { name: 'Holy Charge', desc: 'พุ่งศักดิ์สิทธิ์', cooldown: 9 },
+      skill2: { name: 'Dawn Barrier', desc: 'เกราะรุ่งอรุณ', cooldown: 15 },
+      passive: { name: 'Chosen Knight', desc: 'เมื่อ HP เต็มจะสร้างโล่พิเศษ' },
+      ultimate: { name: 'Sword of Dawn', desc: 'ดาบแห่งรุ่งอรุณ' }
+    },
+    maxStars: 6, icon: '🌅'
+  },
+  {
+    id: 55, name: 'ERENIX', rarity: 'SSR+', element: 'Earth', role: 'Tank',
+    gender: 'M', description: 'นักรบยักษ์ผู้ควบคุมพลังชีวภาพ ร่างสูงมาก มีเกราะธรรมชาติ',
+    baseStats: { hp: 9000, atk: 450, def: 550, spd: 55, critRate: 5, critDmg: 140, energy: 100, effectRes: 30, penetration: 0, healing: 10 },
+    skills: {
+      basic: { name: 'Titan Fist', desc: 'หมัดยักษ์' },
+      skill1: { name: 'Titan Roar', desc: 'คำรามยักษ์', cooldown: 10 },
+      skill2: { name: 'Ground Break', desc: 'ทำลายพื้น', cooldown: 14 },
+      passive: { name: 'Colossus', desc: 'ได้รับความเสียหายน้อยลงตามขนาด HP สูงสุด' },
+      ultimate: { name: 'World Titan', desc: 'ไททันแห่งโลก' }
+    },
+    maxStars: 6, icon: '🏔️'
+  },
+
+  // ==================== SSS (56-65) ====================
+  {
+    id: 56, name: 'GOZEN', rarity: 'SSS', element: 'Cosmic', role: 'Mage',
+    gender: 'M', description: 'จอมเวทปิดผนึกพลัง ชายผมขาว ตาสีฟ้า เสื้อคลุมดำม่วง',
+    baseStats: { hp: 5500, atk: 780, def: 280, spd: 100, critRate: 16, critDmg: 195, energy: 100, effectRes: 25, penetration: 20, healing: 0 },
+    skills: {
+      basic: { name: 'Void Bolt', desc: 'ลูกว่างเปล่า' },
+      skill1: { name: 'Void Infinity', desc: 'ความว่างเปล่าอนันต์', cooldown: 10 },
+      skill2: { name: 'Spatial Prison', desc: 'คุกมิติ', cooldown: 16 },
+      passive: { name: 'Infinite Barrier', desc: 'สร้างโล่พลังงานเป็นระยะ' },
+      ultimate: { name: 'Infinite Domain', desc: 'ดินแดนอนันต์ — ครอบครองสนาม' }
+    },
+    maxStars: 7, icon: '♾️'
+  },
+  {
+    id: 57, name: 'KAIRU', rarity: 'SSS', element: 'Aqua', role: 'Tank',
+    gender: 'M', description: 'ราชามังกรทะเล ร่างยักษ์ เกราะเกล็ดสีฟ้า',
+    baseStats: { hp: 10000, atk: 550, def: 580, spd: 70, critRate: 10, critDmg: 160, energy: 100, effectRes: 30, penetration: 8, healing: 15 },
+    skills: {
+      basic: { name: 'Dragon Wave', desc: 'คลื่นมังกร' },
+      skill1: { name: 'Ocean Dragon', desc: 'มังกรทะเล', cooldown: 10 },
+      skill2: { name: 'Thunder Roar', desc: 'คำรามสายฟ้า', cooldown: 14 },
+      passive: { name: 'Dragon Emperor', desc: 'เพิ่ม DEF และ Effect Res ของทีม' },
+      ultimate: { name: 'World Flood', desc: 'น้ำท่วมโลก' }
+    },
+    maxStars: 7, icon: '🐉'
+  },
+  {
+    id: 58, name: 'YORASHI', rarity: 'SSS', element: 'Radiant', role: 'Fighter',
+    gender: 'M', description: 'นักดาบแห่งสุริยะ ชายชราผมขาว ใช้ดาบแสงสีทอง',
+    baseStats: { hp: 6200, atk: 720, def: 320, spd: 105, critRate: 20, critDmg: 200, energy: 100, effectRes: 18, penetration: 18, healing: 0 },
+    skills: {
+      basic: { name: 'Solar Cut', desc: 'ตัดสุริยะ' },
+      skill1: { name: 'Solar Blade', desc: 'ดาบสุริยะ', cooldown: 9 },
+      skill2: { name: 'Thousand Sun', desc: 'พันสุริยะ', cooldown: 15 },
+      passive: { name: 'Sun Breathing', desc: 'ฟื้น Energy และ HP ช้า ๆ' },
+      ultimate: { name: 'Final Sunrise', desc: 'รุ่งอรุณสุดท้าย' }
+    },
+    maxStars: 7, icon: '☀️'
+  },
+  {
+    id: 59, name: 'YUWAEL ABSOLUTE', rarity: 'SSS', element: 'Cosmic', role: 'Fighter',
+    gender: 'M', description: 'ร่างสมบูรณ์ของราชันมิติ เกราะดำทอง',
+    baseStats: { hp: 7000, atk: 750, def: 350, spd: 110, critRate: 18, critDmg: 200, energy: 100, effectRes: 30, penetration: 20, healing: 0 },
+    skills: {
+      basic: { name: 'Absolute Cut', desc: 'ตัดสมบูรณ์' },
+      skill1: { name: 'Absolute Rewrite', desc: 'เขียนใหม่สมบูรณ์', cooldown: 10 },
+      skill2: { name: 'Cosmic Erasure', desc: 'ลบจักรวาล', cooldown: 16 },
+      passive: { name: 'Reality Authority', desc: 'ต้านทาน Reality Effect ทั้งหมด' },
+      ultimate: { name: 'End of Reality', desc: 'จุดจบของความจริง' }
+    },
+    maxStars: 7, icon: '🌌'
+  },
+  {
+    id: 60, name: 'JINRO MONARCH PRIME', rarity: 'SSS', element: 'Shadow', role: 'Summoner',
+    gender: 'M', description: 'ราชันแห่งกองทัพเงาขั้นสูงสุด',
+    baseStats: { hp: 6500, atk: 700, def: 300, spd: 105, critRate: 16, critDmg: 190, energy: 100, effectRes: 22, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Prime Slash', desc: 'ฟันสูงสุด' },
+      skill1: { name: 'Monarch Blade', desc: 'ดาบราชัน', cooldown: 9 },
+      skill2: { name: 'Infinite Army', desc: 'กองทัพอนันต์', cooldown: 18 },
+      passive: { name: 'Shadow Immortality', desc: 'เงาไม่สามารถถูกทำลายได้ง่าย' },
+      ultimate: { name: 'Nightfall Dominion', desc: 'ครองราตรี' }
+    },
+    maxStars: 7, icon: '🌑'
+  },
+  {
+    id: 61, name: 'FREYRA THE END', rarity: 'SSS', element: 'Radiant', role: 'Mage',
+    gender: 'F', description: 'จอมเวทผู้สิ้นสุดยุคมืด ชุดคลุมขาวทอง มีวงแหวนเวท 12 วง',
+    baseStats: { hp: 5800, atk: 800, def: 280, spd: 100, critRate: 17, critDmg: 200, energy: 100, effectRes: 22, penetration: 20, healing: 15 },
+    skills: {
+      basic: { name: 'End Bolt', desc: 'ลูกจุดจบ' },
+      skill1: { name: 'End Magic', desc: 'เวทจุดจบ', cooldown: 9 },
+      skill2: { name: 'Demon Extinction', desc: 'ดับสูญอสูร', cooldown: 15 },
+      passive: { name: 'Ancient Spellcaster', desc: 'Skill แรงขึ้นตามจำนวนวงแหวน' },
+      ultimate: { name: 'End of Ages', desc: 'จุดจบแห่งยุคสมัย' }
+    },
+    maxStars: 7, icon: '✨'
+  },
+  {
+    id: 62, name: 'RIMORA', rarity: 'SSS', element: 'Cosmic', role: 'Assassin',
+    gender: 'F', description: 'ราชินีมังกรเจล ร่างมนุษย์ผมฟ้าน้ำเงิน ใช้ดาบเวท',
+    baseStats: { hp: 5200, atk: 760, def: 250, spd: 120, critRate: 22, critDmg: 210, energy: 100, effectRes: 18, penetration: 22, healing: 0 },
+    skills: {
+      basic: { name: 'Void Slash', desc: 'ฟันว่างเปล่า' },
+      skill1: { name: 'Devour', desc: 'กลืนกิน', cooldown: 9 },
+      skill2: { name: 'Ultimate Barrier', desc: 'เกราะสูงสุด', cooldown: 14 },
+      passive: { name: 'Predator Core', desc: 'สามารถคัดลอก Buff ของศัตรู' },
+      ultimate: { name: 'Void Predator', desc: 'นักล่าแห่งความว่างเปล่า' }
+    },
+    maxStars: 7, icon: '🐲'
+  },
+  {
+    id: 63, name: 'SAITEN', rarity: 'SSS', element: 'Physical', role: 'Fighter',
+    gender: 'M', description: 'ชายหัวโล้นนักต่อย ชุดฮีโร่สีเหลืองดำ (ออกแบบใหม่ทั้งหมด) ใช้หมัดเป็นหลัก',
+    baseStats: { hp: 6800, atk: 750, def: 300, spd: 115, critRate: 18, critDmg: 200, energy: 100, effectRes: 20, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Normal Punch', desc: 'หมัดปกติ' },
+      skill1: { name: 'Serious Punch', desc: 'หมัดจริงจัง', cooldown: 9 },
+      skill2: { name: 'Meteor Jump', desc: 'กระโดดอุกกาบาต', cooldown: 12 },
+      passive: { name: 'Limitless Strength', desc: 'ATK ไม่มีขีดจำกัดตามสถานการณ์' },
+      ultimate: { name: 'One Impact', desc: 'หมัดเดียวจบ' }
+    },
+    maxStars: 7, icon: '👊'
+  },
+  {
+    id: 64, name: 'GOKARA', rarity: 'SSS', element: 'Volt', role: 'Fighter',
+    gender: 'M', description: 'นักรบต่างดาวผมดำตั้งชี้ ชุดเกราะสีน้ำเงินเงิน',
+    baseStats: { hp: 6000, atk: 740, def: 290, spd: 110, critRate: 18, critDmg: 195, energy: 100, effectRes: 18, penetration: 18, healing: 0 },
+    skills: {
+      basic: { name: 'Energy Punch', desc: 'หมัดพลังงาน' },
+      skill1: { name: 'Energy Blast', desc: 'ระเบิดพลังงาน', cooldown: 9 },
+      skill2: { name: 'Star Rush', desc: 'พุ่งดาว', cooldown: 12 },
+      passive: { name: 'Battle Evolution', desc: 'ยิ่งต่อสู้นานยิ่งแข็งแกร่ง' },
+      ultimate: { name: 'Galactic Burst', desc: 'ระเบิดกาแล็กซี' }
+    },
+    maxStars: 7, icon: '👽'
+  },
+  {
+    id: 65, name: 'ZENOR', rarity: 'SSS', element: 'Cosmic', role: 'Controller',
+    gender: 'M', description: 'ผู้ดูแลจักรวาล เด็กตัวเล็ก ผมขาว ชุดม่วง',
+    baseStats: { hp: 5000, atk: 700, def: 250, spd: 100, critRate: 15, critDmg: 190, energy: 100, effectRes: 35, penetration: 15, healing: 10 },
+    skills: {
+      basic: { name: 'Universe Touch', desc: 'สัมผัสจักรวาล' },
+      skill1: { name: 'Universe Touch', desc: 'สัมผัสจักรวาล', cooldown: 10 },
+      skill2: { name: 'Reality Delete', desc: 'ลบความจริง', cooldown: 16 },
+      passive: { name: 'Absolute Authority', desc: 'ไม่สามารถถูก Control ได้' },
+      ultimate: { name: 'Cosmic Reset', desc: 'รีเซ็ตจักรวาล' }
+    },
+    maxStars: 7, icon: '🧒'
+  },
+
+  // ==================== SECRET (66-72) ====================
+  {
+    id: 66, name: 'RIGA', rarity: 'SECRET', element: 'Shadow', role: 'Controller',
+    gender: 'F', description: 'วิญญาณราชินีแห่งคำสาป รูปร่างโปร่งแสง มีแขนพลังงานหลายคู่',
+    baseStats: { hp: 6000, atk: 720, def: 280, spd: 105, critRate: 16, critDmg: 200, energy: 100, effectRes: 25, penetration: 18, healing: 5 },
+    skills: {
+      basic: { name: 'Curse Touch', desc: 'สัมผัสคำสาป' },
+      skill1: { name: 'Curse Queen', desc: 'ราชินีคำสาป', cooldown: 10 },
+      skill2: { name: 'Phantom Embrace', desc: 'กอดเงา', cooldown: 15 },
+      passive: { name: 'Undying Curse', desc: 'คำสาปไม่หายไปง่าย' },
+      ultimate: { name: "Queen's Grief", desc: 'ความโศกเศร้าของราชินี — เปลี่ยนกฎสนาม' }
+    },
+    maxStars: 8, icon: '👻'
+  },
+  {
+    id: 67, name: 'SATELIA', rarity: 'SECRET', element: 'Shadow', role: 'Mage',
+    gender: 'F', description: 'แม่มดแห่งความว่างเปล่า หญิงสาวผมดำยาว ชุดดำม่วง',
+    baseStats: { hp: 5500, atk: 800, def: 250, spd: 100, critRate: 18, critDmg: 210, energy: 100, effectRes: 28, penetration: 20, healing: 0 },
+    skills: {
+      basic: { name: 'Void Spark', desc: 'ประกายว่างเปล่า' },
+      skill1: { name: 'Void Garden', desc: 'สวนว่างเปล่า', cooldown: 10 },
+      skill2: { name: 'Time Devour', desc: 'กลืนกินเวลา', cooldown: 16 },
+      passive: { name: "Witch's Immortality", desc: 'เมื่อถูกกำจัดมีโอกาสฟื้นคืน' },
+      ultimate: { name: 'Eternal Void', desc: 'ความว่างเปล่าชั่วนิรันดร์' }
+    },
+    maxStars: 8, icon: '🧙'
+  },
+  {
+    id: 68, name: 'KAGURA', rarity: 'SECRET', element: 'Cosmic', role: 'Mage',
+    gender: 'F', description: 'เทพีต้นกำเนิดพลังเวท หญิงสาวชุดขาวทอง มีวงแหวนพลัง 8 ชั้น',
+    baseStats: { hp: 6200, atk: 820, def: 300, spd: 100, critRate: 17, critDmg: 210, energy: 100, effectRes: 30, penetration: 22, healing: 20 },
+    skills: {
+      basic: { name: 'Genesis Spark', desc: 'ประกายต้นกำเนิด' },
+      skill1: { name: 'Genesis Sphere', desc: 'ทรงกลมต้นกำเนิด', cooldown: 10 },
+      skill2: { name: 'Chakra Storm', desc: 'พายุจักระ', cooldown: 15 },
+      passive: { name: 'Origin', desc: 'เป็นต้นกำเนิดของพลังเวททั้งหมด' },
+      ultimate: { name: 'Birth of Worlds', desc: 'กำเนิดโลกใหม่' }
+    },
+    maxStars: 8, icon: '🌺'
+  },
+  {
+    id: 69, name: 'FEATHERIA', rarity: 'SECRET', element: 'Cosmic', role: 'Controller',
+    gender: 'F', description: 'หญิงผู้เขียนกฎของโลก ถือปากกาคริสตัล',
+    baseStats: { hp: 5800, atk: 750, def: 270, spd: 105, critRate: 16, critDmg: 200, energy: 100, effectRes: 32, penetration: 18, healing: 10 },
+    skills: {
+      basic: { name: 'Script Strike', desc: 'เขียนโจมตี' },
+      skill1: { name: 'Script Change', desc: 'เปลี่ยนบท', cooldown: 10 },
+      skill2: { name: 'Story Collapse', desc: 'เรื่องราวพังทลาย', cooldown: 16 },
+      passive: { name: "Author's Eye", desc: 'มองเห็นจุดอ่อนของศัตรู' },
+      ultimate: { name: 'Rewrite the Tale', desc: 'เขียนนิทานใหม่ — เปลี่ยนกฎการต่อสู้' }
+    },
+    maxStars: 8, icon: '✒️'
+  },
+  {
+    id: 70, name: 'MADORA', rarity: 'SECRET', element: 'Radiant', role: 'Mage',
+    gender: 'F', description: 'เทพีแห่งกฎใหม่ หญิงสาวผมชมพูขาว มีวงแหวนเวทขนาดใหญ่',
+    baseStats: { hp: 6000, atk: 780, def: 290, spd: 100, critRate: 17, critDmg: 205, energy: 100, effectRes: 30, penetration: 20, healing: 15 },
+    skills: {
+      basic: { name: 'Law Bolt', desc: 'ลูกกฎ' },
+      skill1: { name: 'Law Creation', desc: 'สร้างกฎ', cooldown: 10 },
+      skill2: { name: 'Destiny Rewrite', desc: 'เขียนโชคชะตาใหม่', cooldown: 16 },
+      passive: { name: 'Universal Law', desc: 'กฎของเธอมีผลเหนือสนาม' },
+      ultimate: { name: 'New Universe', desc: 'จักรวาลใหม่' }
+    },
+    maxStars: 8, icon: '📜'
+  },
+  {
+    id: 71, name: 'TRUTHEN', rarity: 'SECRET', element: 'Cosmic', role: 'Controller',
+    gender: 'N', description: 'สิ่งมีชีวิตไร้รูปร่าง ร่างเป็นประตูสีขาว มีดวงตาจำนวนมาก',
+    baseStats: { hp: 7000, atk: 700, def: 350, spd: 90, critRate: 14, critDmg: 190, energy: 100, effectRes: 40, penetration: 15, healing: 0 },
+    skills: {
+      basic: { name: 'Truth Gaze', desc: 'สายตาแห่งความจริง' },
+      skill1: { name: 'Truth Gate', desc: 'ประตูความจริง', cooldown: 11 },
+      skill2: { name: 'Equivalent Exchange', desc: 'แลกเปลี่ยนที่เท่าเทียม', cooldown: 16 },
+      passive: { name: 'Absolute Truth', desc: 'ไม่สามารถถูกหลอกหรือซ่อนได้' },
+      ultimate: { name: 'Judgment', desc: 'พิพากษา — ตัดสินตามความจริง' }
+    },
+    maxStars: 8, icon: '👁️'
+  },
+  {
+    id: 72, name: 'HARUNA', rarity: 'SECRET', element: 'Cosmic', role: 'Controller',
+    gender: 'F', description: 'เด็กสาวผู้ควบคุมความจริง ผมสีน้ำเงินเข้ม มีเศษดาวลอยรอบตัว',
+    baseStats: { hp: 5600, atk: 760, def: 260, spd: 110, critRate: 18, critDmg: 210, energy: 100, effectRes: 35, penetration: 20, healing: 10 },
+    skills: {
+      basic: { name: 'Reality Spark', desc: 'ประกายความจริง' },
+      skill1: { name: 'Reality Shift', desc: 'เลื่อนความจริง', cooldown: 10 },
+      skill2: { name: 'Wish', desc: 'คำอธิษฐาน', cooldown: 18 },
+      passive: { name: 'World Consciousness', desc: 'รับรู้ทุกอย่างในสนาม' },
+      ultimate: { name: 'Reality Reset', desc: 'รีเซ็ตความจริง' }
+    },
+    maxStars: 8, icon: '🌟'
+  },
+
+  // ==================== KING (73-75) ====================
+  {
+    id: 73, name: 'SAITEN KING', rarity: 'KING', element: 'Physical', role: 'Fighter',
+    gender: 'M', description: 'ราชันหมัดไร้ขีดจำกัด รูปร่างเรียบง่าย แต่มี Aura สีทองมหาศาล',
+    baseStats: { hp: 9000, atk: 900, def: 400, spd: 130, critRate: 25, critDmg: 250, energy: 100, effectRes: 40, penetration: 25, healing: 0 },
+    skills: {
+      basic: { name: 'King Punch', desc: 'หมัดราชัน' },
+      skill1: { name: 'Absolute Punch', desc: 'สร้างคลื่นกระแทกทั่วสนาม', cooldown: 10 },
+      skill2: { name: 'Beyond Speed', desc: 'หายตัวและโจมตีศัตรูทั้งหมด', cooldown: 14 },
+      passive: { name: 'Limit Breaker', desc: 'ไม่สามารถลด ATK ต่ำกว่าค่าพื้นฐาน' },
+      ultimate: { name: 'ZERO PUNCH', desc: 'หมัดเดียวสร้าง Shockwave ขนาดมหาศาล' }
+    },
+    maxStars: 10, icon: '👑'
+  },
+  {
+    id: 74, name: 'ZENOR KING', rarity: 'KING', element: 'Cosmic', role: 'Controller',
+    gender: 'M', description: 'ผู้ดูแลสูงสุดแห่งจักรวาล ร่างเด็กเล็ก แต่มีวงแหวนจักรวาลจำนวนมาก',
+    baseStats: { hp: 8500, atk: 850, def: 380, spd: 120, critRate: 20, critDmg: 230, energy: 100, effectRes: 50, penetration: 25, healing: 20 },
+    skills: {
+      basic: { name: 'Cosmic Touch', desc: 'สัมผัสจักรวาล' },
+      skill1: { name: 'Universe Erase', desc: 'ลบ Buff และ Summon ทั้งหมด', cooldown: 12 },
+      skill2: { name: 'Cosmic Command', desc: 'หยุดเวลาชั่วคราว', cooldown: 18 },
+      passive: { name: 'Absolute Sovereign', desc: 'ไม่สามารถถูก Stun, Freeze, Silence หรือ Control' },
+      ultimate: { name: 'TOTAL ERASE', desc: 'ลบพื้นที่สนามต่อสู้ชั่วคราว' }
+    },
+    maxStars: 10, icon: '🌌'
+  },
+  {
+    id: 75, name: 'ANOSAR', rarity: 'KING', element: 'Cosmic', role: 'Fighter',
+    gender: 'M', description: 'ราชาปีศาจเหนือกฎ ชายหนุ่มผมดำแดง ดวงตาสีแดงเข้ม มีเขาสีดำและเสื้อคลุมยาว ใช้อาวุธเป็นดาบสีดำที่แตกเป็นชิ้นส่วนได้',
+    baseStats: { hp: 9500, atk: 880, def: 420, spd: 125, critRate: 22, critDmg: 240, energy: 100, effectRes: 45, penetration: 25, healing: 15 },
+    skills: {
+      basic: { name: 'Demon Slash', desc: 'ฟันปีศาจ' },
+      skill1: { name: "Demon King's Ruin", desc: 'ทำลายโล่และ Buff ของศัตรู', cooldown: 10 },
+      skill2: { name: 'Immortal Return', desc: 'ฟื้นตัวหลังถูกกำจัดหนึ่งครั้ง', cooldown: 0 },
+      passive: { name: 'King of Laws', desc: 'ลดผลของกฎสนามต่อเขาอย่างมาก' },
+      ultimate: { name: 'WORLD REWRITE', desc: 'เปลี่ยนกฎของสนามต่อสู้ชั่วคราว' }
+    },
+    maxStars: 10, icon: '👹'
+  }
+];
+
+// Helper functions
+function getCharacterById(id) {
+  return CHARACTERS.find(c => c.id === id);
+}
+
+function getCharactersByRarity(rarity) {
+  return CHARACTERS.filter(c => c.rarity === rarity);
+}
+
+function calculatePower(char, level = 1, stars = 0) {
+  const base = char.baseStats;
+  const levelMult = 1 + (level - 1) * 0.08;
+  const starMult = 1 + stars * 0.12;
+  return Math.floor((base.hp * 0.1 + base.atk * 2 + base.def * 1.5 + base.spd * 3) * levelMult * starMult);
+}
+
+function getRarityColor(rarity) {
+  return RARITY_COLORS[rarity] || '#fff';
+}
+
+</script>
+  <script>
+/**
+ * World Stage System — 10 Worlds × 20 Stages = 200 Stages
+ */
+
+const WORLDS = [
+  {
+    id: 1, name: 'THE LOST FRONTIER', theme: 'ทุ่งหญ้า เมืองร้าง ป่าโบราณ',
+    boss: 'THE ANCIENT GUARDIAN', color: '#4ade80',
+    stages: [
+      { id: '1-1', name: 'Abandoned Road', power: 1000 },
+      { id: '1-2', name: 'Broken Village', power: 1200 },
+      { id: '1-3', name: 'Forest Gate', power: 1400 },
+      { id: '1-4', name: 'Misty Forest', power: 1600 },
+      { id: '1-5', name: 'Ancient Bridge', power: 1800 },
+      { id: '1-6', name: 'Ruined Camp', power: 2000 },
+      { id: '1-7', name: 'Wolf Territory', power: 2200 },
+      { id: '1-8', name: 'Forgotten Shrine', power: 2400 },
+      { id: '1-9', name: 'Deep Forest', power: 2600 },
+      { id: '1-10', name: 'Moonlit Lake', power: 2800 },
+      { id: '1-11', name: "Hunter's Path", power: 3000 },
+      { id: '1-12', name: 'Old Fortress', power: 3200 },
+      { id: '1-13', name: 'Broken Tower', power: 3400 },
+      { id: '1-14', name: 'Shadow Cave', power: 3600 },
+      { id: '1-15', name: 'Crystal Tunnel', power: 3800 },
+      { id: '1-16', name: 'Ancient Ruins', power: 4000 },
+      { id: '1-17', name: 'Guardian Gate', power: 4200 },
+      { id: '1-18', name: 'Forgotten Temple', power: 4500 },
+      { id: '1-19', name: 'Temple Depths', power: 4800 },
+      { id: '1-20', name: 'Guardian of the Frontier', power: 5500, boss: true }
+    ]
+  },
+  {
+    id: 2, name: 'EMBER KINGDOM', theme: 'ภูเขาไฟ เมืองแห่งไฟ ปราสาทเพลิง',
+    boss: 'THE EMBER LORD', color: '#ef4444',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`2-${i+1}`,
+      name:['Burning Road','Ash Village','Lava Valley','Ember Forest','Fire Mine','Magma Bridge','Scorched Battlefield','Flame Shrine','Lava Cave','Burning Lake','Fire Fortress',"Warrior's Gate",'Magma Tower','Inferno Hall','Dragon Nest','Burning Throne','Royal Furnace','Demon Gate','Crimson Castle','Lord of Embers'][i],
+      power:5000+i*350, boss:i===19
+    }))
+  },
+  {
+    id: 3, name: 'SUNKEN EMPIRE', theme: 'เมืองใต้น้ำ ทะเล ซากอาณาจักร',
+    boss: 'LEVIATHAN KING', color: '#3b82f6',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`3-${i+1}`,
+      name:['Coastal Ruins','Sunken Port','Coral Road','Underwater Cave','Pearl Garden','Broken Substation','Deep Current','Sunken Temple','Abyss Tunnel','Ocean Palace','Royal Aquarium','Forgotten Ship','Deep Sea Gate','Ancient Aquarium','Leviathan Road','Abyssal Fortress','Royal Chamber',"Sea King's Gate",'Throne of Tides','The Abyssal King'][i],
+      power:11000+i*400, boss:i===19
+    }))
+  },
+  {
+    id: 4, name: 'STORM CITY', theme: 'เมืองอนาคต พายุ ฟ้าผ่า เครื่องจักร',
+    boss: 'THUNDER OVERLORD', color: '#facc15',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`4-${i+1}`,
+      name:['Neon Street','Power District','Storm Highway','Machine Factory','Electric Tunnel','Cyber Market','Lightning Tower','Drone Zone','Reactor Road','Storm Station','Cyber Fortress','Energy Plant','Thunder Bridge','Reactor Core','Machine District','Storm Tower','Central Control','Sky Reactor','Storm Citadel','Thunder Overlord'][i],
+      power:15000+i*500, boss:i===19
+    }))
+  },
+  {
+    id: 5, name: 'FROZEN REALM', theme: 'หิมะ น้ำแข็ง เมืองโบราณ',
+    boss: 'THE FROST QUEEN', color: '#67e8f9',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`5-${i+1}`,
+      name:['Frozen Road','Snow Village','Ice Forest','Frozen Lake','Crystal Cave','Ice Bridge','Snow Battlefield','Frost Shrine','Glacier Tunnel','Frozen Castle','Crystal Garden','Ice Fortress','Frozen Tower','Blizzard Hall','Ancient Glacier','Frost Gate','Frozen Throne','Eternal Winter','Ice Palace','Queen of Frost'][i],
+      power:20000+i*600, boss:i===19
+    }))
+  },
+  {
+    id: 6, name: 'SHADOW DOMAIN', theme: 'โลกมืด ปราสาทร้าง เมืองเงา',
+    boss: 'THE SHADOW LORD', color: '#6b21a8',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`6-${i+1}`,
+      name:['Dark Road','Shadow Village','Black Forest','Phantom Street','Cursed Graveyard','Shadow Cave','Dark Temple','Soul Bridge','Nightmare Forest','Black Castle','Phantom Hall','Cursed Tower','Shadow Prison','Demon Gate','Abyss Road','Shadow Fortress','Soul Chamber','Dark Throne','Abyss Castle','Lord of Shadows'][i],
+      power:26000+i*700, boss:i===19
+    }))
+  },
+  {
+    id: 7, name: 'CELESTIAL CITY', theme: 'เมืองบนฟ้า วิหาร แสงศักดิ์สิทธิ์',
+    boss: 'CELESTIAL GUARDIAN', color: '#fef08a',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`7-${i+1}`,
+      name:['Sky Road','Cloud Village','Celestial Bridge','Floating Garden','Sky Temple','Light Gate','Angel District','Sacred Library','Celestial Tower','Holy Palace','Sun Garden','Divine Fortress','Golden Road','Light Cathedral','Sacred Battlefield','Heaven Gate','Divine Chamber','Celestial Throne',"God's Palace",'Guardian of Heaven'][i],
+      power:33000+i*800, boss:i===19
+    }))
+  },
+  {
+    id: 8, name: 'COSMIC VOID', theme: 'อวกาศ มิติแตก',
+    boss: 'THE COSMIC DESTROYER', color: '#a855f7',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`8-${i+1}`,
+      name:['Star Road','Void Station','Cosmic Field','Broken Planet','Gravity Tunnel','Star Temple','Meteor Zone','Void Forest','Dimension Gate','Cosmic City','Black Hole Road','Space Fortress','Broken Dimension','Time Chamber','Reality Tunnel','Cosmic Palace','Void Throne','Dimension Core','End of Space','Cosmic Destroyer'][i],
+      power:42000+i*1000, boss:i===19
+    }))
+  },
+  {
+    id: 9, name: 'REALITY FRACTURE', theme: 'โลกที่กฎของความจริงกำลังพังทลาย',
+    boss: 'REALITY BREAKER', color: '#ec4899',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`9-${i+1}`,
+      name:['Broken Reality','Reversed City','Floating Ruins','Endless Hall','Time Fragment','Distorted Forest','Mirror World','Infinite Road','Gravity Collapse','Time Collapse','Memory Zone','Reality Prison','Broken Dimension','Infinite Tower','World Fragment','Reality Gate',"Creator's Path",'Final Dimension','End of Reality','The Reality Breaker'][i],
+      power:55000+i*1200, boss:i===19
+    }))
+  },
+  {
+    id: 10, name: 'ETERNAL CORE', theme: 'สถานที่ต้นกำเนิดพลังทั้งหมด',
+    boss: 'THE ETERNAL SOVEREIGN', color: '#fbbf24',
+    stages: Array.from({length:20}, (_,i)=>({
+      id:`10-${i+1}`,
+      name:['Core Entrance','Eternal Road','Ancient Core','Energy Hall','Core Chamber','Guardian Hall','Infinite Stairway','Ancient Machine','Core Reactor','Eternal Temple','Origin Gate','Creation Hall','Destroyer Hall','King Chamber','Divine Core','Eternal Gate','Final Guardian','Core of Worlds','Eternal Throne','THE ETERNAL CORE'][i],
+      power:70000+i*1500, boss:i===19
+    }))
+  }
+];
+
+function getWorld(id) { return WORLDS.find(w => w.id === id); }
+function getStage(worldId, stageNum) {
+  const world = getWorld(worldId);
+  return world ? world.stages[stageNum - 1] : null;
+}
+
+</script>
+  <script>
+/**
+ * Save System — localStorage based
+ */
+
+const SAVE_KEY = 'mythic_clash_save_v1';
+
+const DEFAULT_SAVE = {
+  playerName: 'Core Seeker',
+  playerLevel: 1,
+  playerExp: 0,
+  energy: 120,
+  maxEnergy: 120,
+  coins: 85200,
+  gems: 12500,
+  lobbyHeroId: 1,
+  ownedCharacters: {
+    // Start with a few R characters
+    1: { level: 1, stars: 0, exp: 0, awakened: false },
+    2: { level: 1, stars: 0, exp: 0, awakened: false },
+    3: { level: 1, stars: 0, exp: 0, awakened: false },
+    5: { level: 1, stars: 0, exp: 0, awakened: false },
+    12: { level: 1, stars: 0, exp: 0, awakened: false }
+  },
+  teams: [
+    [1, 2, 3, 5, 12, null], // Team 1
+    [null, null, null, null, null, null],
+    [null, null, null, null, null, null],
+    [null, null, null, null, null, null],
+    [null, null, null, null, null, null]
+  ],
+  currentTeamIndex: 0,
+  pity: { ssr: 0, ssrplus: 0, sss: 0, secret: 0, king: 0 },
+  stageProgress: {}, // { '1-1': { stars: 3, cleared: true }, ... }
+  unlockedWorlds: [1],
+  unlockedHard: [],
+  freeSummonAvailable: true,
+  lastFreeSummon: 0,
+  settings: {
+    graphics: 'medium',
+    fps: 60,
+    shake: true,
+    damageNum: true,
+    music: 70,
+    sfx: 80,
+    lang: 'th'
+  },
+  newCharacters: [] // IDs of newly obtained characters
+};
+
+const SaveSystem = {
+  data: null,
+
+  load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        this.data = { ...DEFAULT_SAVE, ...JSON.parse(raw) };
+        // Ensure nested objects
+        this.data.ownedCharacters = { ...DEFAULT_SAVE.ownedCharacters, ...this.data.ownedCharacters };
+        this.data.pity = { ...DEFAULT_SAVE.pity, ...this.data.pity };
+        this.data.settings = { ...DEFAULT_SAVE.settings, ...this.data.settings };
+      } else {
+        this.data = JSON.parse(JSON.stringify(DEFAULT_SAVE));
+      }
+    } catch (e) {
+      console.warn('Save load failed, using default', e);
+      this.data = JSON.parse(JSON.stringify(DEFAULT_SAVE));
+    }
+    return this.data;
+  },
+
+  save() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(this.data));
+    } catch (e) {
+      console.error('Save failed', e);
+    }
+  },
+
+  reset() {
+    this.data = JSON.parse(JSON.stringify(DEFAULT_SAVE));
+    this.save();
+  },
+
+  // Helpers
+  ownsCharacter(id) {
+    return !!this.data.ownedCharacters[id];
+  },
+
+  getCharacterData(id) {
+    return this.data.ownedCharacters[id] || null;
+  },
+
+  addCharacter(id) {
+    if (!this.data.ownedCharacters[id]) {
+      this.data.ownedCharacters[id] = { level: 1, stars: 0, exp: 0, awakened: false };
+      this.data.newCharacters.push(id);
+      this.save();
+      return true; // new
+    }
+    // Duplicate → add star material conceptually
+    const c = this.data.ownedCharacters[id];
+    if (c.stars < 10) {
+      // Convert to shard logic simplified: chance to gain star progress
+    }
+    this.save();
+    return false; // duplicate
+  },
+
+  isStageCleared(stageId) {
+    return this.data.stageProgress[stageId]?.cleared || false;
+  },
+
+  getStageStars(stageId) {
+    return this.data.stageProgress[stageId]?.stars || 0;
+  },
+
+  clearStage(stageId, stars) {
+    const prev = this.data.stageProgress[stageId];
+    this.data.stageProgress[stageId] = {
+      cleared: true,
+      stars: Math.max(prev?.stars || 0, stars)
+    };
+    // Unlock next
+    this._unlockNext(stageId);
+    this.save();
+  },
+
+  _unlockNext(stageId) {
+    const [w, s] = stageId.split('-').map(Number);
+    if (s < 20) {
+      // next stage in same world is unlocked by progression check
+    } else {
+      // World cleared → unlock next world + hard
+      if (!this.data.unlockedHard.includes(w)) {
+        this.data.unlockedHard.push(w);
+      }
+      if (w < 10 && !this.data.unlockedWorlds.includes(w + 1)) {
+        this.data.unlockedWorlds.push(w + 1);
+      }
+    }
+  },
+
+  canEnterStage(stageId) {
+    const [w, s] = stageId.split('-').map(Number);
+    if (!this.data.unlockedWorlds.includes(w)) return false;
+    if (s === 1) return true;
+    const prevId = `${w}-${s - 1}`;
+    return this.isStageCleared(prevId);
+  },
+
+  getCurrentTeam() {
+    return this.data.teams[this.data.currentTeamIndex] || [null, null, null, null, null, null];
+  },
+
+  setTeamSlot(slot, charId) {
+    this.data.teams[this.data.currentTeamIndex][slot] = charId;
+    this.save();
+  }
+};
+
+</script>
+  <script>
+/**
+ * Gacha System with Pity and Rarity Rates
+ */
+
+const GACHA_RATES = [
+  { rarity: 'R', rate: 58.0 },
+  { rarity: 'SR', rate: 25.0 },
+  { rarity: 'SSR', rate: 10.0 },
+  { rarity: 'SSR+', rate: 4.5 },
+  { rarity: 'SSS', rate: 1.8 },
+  { rarity: 'SECRET', rate: 0.6 },
+  { rarity: 'KING', rate: 0.1 }
+];
+
+const PITY_THRESHOLDS = {
+  ssr: 80,
+  ssrplus: 150,
+  sss: 250,
+  secret: 400,
+  king: 600
+};
+
+const GachaSystem = {
+  rollOne() {
+    const pity = SaveSystem.data.pity;
+
+    // Soft pity / hard pity checks (simplified)
+    let forcedRarity = null;
+    if (pity.king >= PITY_THRESHOLDS.king - 1) forcedRarity = 'KING';
+    else if (pity.secret >= PITY_THRESHOLDS.secret - 1) forcedRarity = 'SECRET';
+    else if (pity.sss >= PITY_THRESHOLDS.sss - 1) forcedRarity = 'SSS';
+    else if (pity.ssrplus >= PITY_THRESHOLDS.ssrplus - 1) forcedRarity = 'SSR+';
+    else if (pity.ssr >= PITY_THRESHOLDS.ssr - 1) forcedRarity = 'SSR';
+
+    let rarity;
+    if (forcedRarity) {
+      rarity = forcedRarity;
+    } else {
+      const roll = Math.random() * 100;
+      let cumulative = 0;
+      for (const r of GACHA_RATES) {
+        cumulative += r.rate;
+        if (roll < cumulative) {
+          rarity = r.rarity;
+          break;
+        }
+      }
+      if (!rarity) rarity = 'R';
+    }
+
+    // Update pity
+    pity.ssr = rarity === 'SSR' || RARITY_ORDER[rarity] > RARITY_ORDER['SSR'] ? 0 : pity.ssr + 1;
+    pity.ssrplus = rarity === 'SSR+' || RARITY_ORDER[rarity] > RARITY_ORDER['SSR+'] ? 0 : pity.ssrplus + 1;
+    pity.sss = rarity === 'SSS' || RARITY_ORDER[rarity] > RARITY_ORDER['SSS'] ? 0 : pity.sss + 1;
+    pity.secret = rarity === 'SECRET' || rarity === 'KING' ? 0 : pity.secret + 1;
+    pity.king = rarity === 'KING' ? 0 : pity.king + 1;
+
+    // Pick random character of that rarity
+    const pool = CHARACTERS.filter(c => c.rarity === rarity);
+    const char = pool[Math.floor(Math.random() * pool.length)];
+
+    const isNew = SaveSystem.addCharacter(char.id);
+    SaveSystem.save();
+
+    return { character: char, isNew, rarity };
+  },
+
+  rollTen() {
+    const results = [];
+    for (let i = 0; i < 10; i++) {
+      results.push(this.rollOne());
+    }
+    // Guarantee at least one SR+ if none
+    const hasSRPlus = results.some(r => RARITY_ORDER[r.rarity] >= 2);
+    if (!hasSRPlus) {
+      // Replace last with SR
+      const srPool = CHARACTERS.filter(c => c.rarity === 'SR');
+      const char = srPool[Math.floor(Math.random() * srPool.length)];
+      const isNew = SaveSystem.addCharacter(char.id);
+      results[9] = { character: char, isNew, rarity: 'SR' };
+    }
+    SaveSystem.save();
+    return results;
+  },
+
+  canAfford(count) {
+    const cost = count === 1 ? 160 : 1600;
+    return SaveSystem.data.gems >= cost;
+  },
+
+  spendGems(count) {
+    const cost = count === 1 ? 160 : 1600;
+    if (SaveSystem.data.gems >= cost) {
+      SaveSystem.data.gems -= cost;
+      SaveSystem.save();
+      return true;
+    }
+    return false;
+  },
+
+  freeSummon() {
+    if (!SaveSystem.data.freeSummonAvailable) return null;
+    SaveSystem.data.freeSummonAvailable = false;
+    SaveSystem.data.lastFreeSummon = Date.now();
+    const result = this.rollOne();
+    SaveSystem.save();
+    return result;
+  }
+};
+
+</script>
+  <script>
+/**
+ * Simplified Real-time 6v6 Battle System (Canvas based)
+ */
+
+const BattleSystem = {
+  canvas: null,
+  ctx: null,
+  running: false,
+  playerTeam: [],
+  enemyTeam: [],
+  activeIndex: 0,
+  timeLeft: 180,
+  wave: 1,
+  maxWaves: 5,
+  totalDamage: 0,
+  animId: null,
+  stageId: null,
+
+  init(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  },
+
+  resize() {
+    if (!this.canvas) return;
+    this.canvas.width = this.canvas.clientWidth * devicePixelRatio;
+    this.canvas.height = this.canvas.clientHeight * devicePixelRatio;
+    this.ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  },
+
+  start(stageId, teamIds) {
+    this.stageId = stageId;
+    this.running = true;
+    this.timeLeft = 180;
+    this.wave = 1;
+    this.totalDamage = 0;
+    this.activeIndex = 0;
+
+    // Build player team
+    this.playerTeam = teamIds.filter(id => id).map((id, i) => {
+      const base = getCharacterById(id);
+      const owned = SaveSystem.getCharacterData(id);
+      const level = owned?.level || 1;
+      const stars = owned?.stars || 0;
+      const mult = 1 + (level - 1) * 0.08 + stars * 0.12;
+      return {
+        id, base, level, stars,
+        hp: Math.floor(base.baseStats.hp * mult),
+        maxHp: Math.floor(base.baseStats.hp * mult),
+        atk: Math.floor(base.baseStats.atk * mult),
+        def: Math.floor(base.baseStats.def * mult),
+        spd: base.baseStats.spd,
+        energy: 0,
+        maxEnergy: 100,
+        x: 100 + i * 30,
+        y: 300,
+        alive: true,
+        cooldown: { s1: 0, s2: 0, ult: 0 }
+      };
+    });
+
+    this.spawnEnemies();
+    this.updateTeamBar();
+    this.loop();
+    this.startTimer();
+  },
+
+  spawnEnemies() {
+    const count = Math.min(3 + this.wave, 6);
+    this.enemyTeam = [];
+    for (let i = 0; i < count; i++) {
+      // Simple enemy based on stage power
+      const power = 800 + this.wave * 200;
+      this.enemyTeam.push({
+        id: 1000 + i,
+        name: `Enemy ${i + 1}`,
+        hp: power * 2,
+        maxHp: power * 2,
+        atk: power * 0.3,
+        def: power * 0.15,
+        x: 500 + i * 40,
+        y: 200 + (i % 2) * 80,
+        alive: true,
+        icon: '👹'
+      });
+    }
+  },
+
+  getActive() {
+    return this.playerTeam[this.activeIndex];
+  },
+
+  switchCharacter(index) {
+    if (index === this.activeIndex) return;
+    if (!this.playerTeam[index] || !this.playerTeam[index].alive) return;
+    this.activeIndex = index;
+    this.updateTeamBar();
+    // Perfect switch bonus simplified
+  },
+
+  attack() {
+    const active = this.getActive();
+    if (!active || !active.alive) return;
+    const target = this.enemyTeam.find(e => e.alive);
+    if (!target) return;
+
+    const dmg = Math.max(1, Math.floor(active.atk * (0.8 + Math.random() * 0.4) - target.def * 0.3));
+    target.hp -= dmg;
+    this.totalDamage += dmg;
+    active.energy = Math.min(100, active.energy + 15);
+
+    if (target.hp <= 0) {
+      target.alive = false;
+      target.hp = 0;
+    }
+
+    this.checkWaveClear();
+  },
+
+  useSkill(slot) {
+    const active = this.getActive();
+    if (!active || !active.alive) return;
+    if (slot === 1 && active.cooldown.s1 > 0) return;
+    if (slot === 2 && active.cooldown.s2 > 0) return;
+    if (slot === 'ult' && active.energy < 100) return;
+
+    const target = this.enemyTeam.find(e => e.alive);
+    if (!target) return;
+
+    let dmgMult = 1.5;
+    if (slot === 2) dmgMult = 2.2;
+    if (slot === 'ult') {
+      dmgMult = 4.0;
+      active.energy = 0;
+    } else if (slot === 1) {
+      active.cooldown.s1 = 8;
+    } else {
+      active.cooldown.s2 = 12;
+    }
+
+    const dmg = Math.max(1, Math.floor(active.atk * dmgMult * (0.9 + Math.random() * 0.2) - target.def * 0.2));
+    target.hp -= dmg;
+    this.totalDamage += dmg;
+
+    // AOE for ult
+    if (slot === 'ult') {
+      this.enemyTeam.forEach(e => {
+        if (e.alive && e !== target) {
+          const aoe = Math.floor(dmg * 0.4);
+          e.hp -= aoe;
+          this.totalDamage += aoe;
+          if (e.hp <= 0) { e.alive = false; e.hp = 0; }
+        }
+      });
+    }
+
+    if (target.hp <= 0) {
+      target.alive = false;
+      target.hp = 0;
+    }
+    this.checkWaveClear();
+  },
+
+  dodge() {
+    // Simple invuln frames concept
+    const active = this.getActive();
+    if (active) active.energy = Math.min(100, active.energy + 5);
+  },
+
+  checkWaveClear() {
+    if (this.enemyTeam.every(e => !e.alive)) {
+      if (this.wave >= this.maxWaves) {
+        this.end(true);
+      } else {
+        this.wave++;
+        this.spawnEnemies();
+        document.getElementById('wave-info').textContent = `Wave ${this.wave}/${this.maxWaves}`;
+      }
+    }
+  },
+
+  startTimer() {
+    this.timerInterval = setInterval(() => {
+      if (!this.running) return;
+      this.timeLeft--;
+      const m = Math.floor(this.timeLeft / 60);
+      const s = this.timeLeft % 60;
+      document.getElementById('battle-timer').textContent =
+        `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      if (this.timeLeft <= 0) this.end(false);
+
+      // Tick cooldowns
+      this.playerTeam.forEach(p => {
+        if (p.cooldown.s1 > 0) p.cooldown.s1 -= 0.2;
+        if (p.cooldown.s2 > 0) p.cooldown.s2 -= 0.2;
+      });
+    }, 200);
+  },
+
+  end(victory) {
+    this.running = false;
+    clearInterval(this.timerInterval);
+    cancelAnimationFrame(this.animId);
+
+    const survivors = this.playerTeam.filter(p => p.alive).length;
+    let stars = 0;
+    if (victory) {
+      stars = 1;
+      if (survivors >= 4) stars = 2;
+      if (survivors === this.playerTeam.length && this.timeLeft > 60) stars = 3;
+      SaveSystem.clearStage(this.stageId, stars);
+      // Rewards
+      SaveSystem.data.coins += 500 + stars * 300;
+      SaveSystem.data.playerExp += 50 + stars * 20;
+      SaveSystem.save();
+    }
+
+    const resultEl = document.getElementById('battle-result');
+    resultEl.classList.remove('hidden');
+    document.getElementById('result-title').textContent = victory ? 'VICTORY!' : 'DEFEAT';
+    document.getElementById('result-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    document.getElementById('result-time').textContent =
+      `${String(Math.floor((180 - this.timeLeft) / 60)).padStart(2, '0')}:${String((180 - this.timeLeft) % 60).padStart(2, '0')}`;
+    document.getElementById('result-damage').textContent = this.totalDamage.toLocaleString();
+    document.getElementById('result-survivors').textContent = `${survivors}/${this.playerTeam.length}`;
+    document.getElementById('result-rewards').innerHTML = victory
+      ? `🪙 +${500 + stars * 300}  |  EXP +${50 + stars * 20}`
+      : 'No rewards';
+  },
+
+  updateTeamBar() {
+    const bar = document.getElementById('player-team-bar');
+    bar.innerHTML = this.playerTeam.map((p, i) => {
+      const hpPct = (p.hp / p.maxHp) * 100;
+      const enPct = p.energy;
+      return `<div class="team-portrait ${i === this.activeIndex ? 'active' : ''} ${!p.alive ? 'dead' : ''}"
+                   data-index="${i}" onclick="BattleSystem.switchCharacter(${i})">
+        <span>${p.base.icon}</span>
+        <div class="hp-bar-mini"><div class="hp-fill" style="width:${hpPct}%"></div></div>
+      </div>`;
+    }).join('');
+  },
+
+  loop() {
+    if (!this.running) return;
+    this.draw();
+    this.animId = requestAnimationFrame(() => this.loop());
+  },
+
+  draw() {
+    const ctx = this.ctx;
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    // Background
+    ctx.fillStyle = '#0f1a2e';
+    ctx.fillRect(0, 0, w, h);
+
+    // Ground line
+    ctx.strokeStyle = 'rgba(123,92,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.7);
+    ctx.lineTo(w, h * 0.7);
+    ctx.stroke();
+
+    // Draw enemies
+    this.enemyTeam.forEach((e, i) => {
+      if (!e.alive) return;
+      const x = w * 0.55 + i * 50;
+      const y = h * 0.35 + (i % 2) * 40;
+      ctx.font = '32px serif';
+      ctx.fillText(e.icon, x, y);
+      // HP bar
+      ctx.fillStyle = '#333';
+      ctx.fillRect(x - 15, y + 10, 50, 6);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(x - 15, y + 10, 50 * (e.hp / e.maxHp), 6);
+    });
+
+    // Draw player team
+    this.playerTeam.forEach((p, i) => {
+      if (!p.alive) return;
+      const x = w * 0.15 + i * 45;
+      const y = h * 0.55;
+      const isActive = i === this.activeIndex;
+      ctx.globalAlpha = isActive ? 1 : 0.6;
+      ctx.font = isActive ? '40px serif' : '28px serif';
+      ctx.fillText(p.base.icon, x, y);
+      ctx.globalAlpha = 1;
+      // HP
+      ctx.fillStyle = '#333';
+      ctx.fillRect(x - 10, y + 12, 40, 5);
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(x - 10, y + 12, 40 * (p.hp / p.maxHp), 5);
+    });
+  },
+
+  stop() {
+    this.running = false;
+    clearInterval(this.timerInterval);
+    cancelAnimationFrame(this.animId);
+  }
+};
+
+</script>
+  <script>
+/**
+ * Lobby UI
+ */
+
+const LobbyUI = {
+  init() {
+    this.updateResources();
+    this.updateLobbyCharacter();
+    this.bindEvents();
+  },
+
+  updateResources() {
+    const d = SaveSystem.data;
+    document.getElementById('player-name').textContent = d.playerName;
+    document.getElementById('player-level').textContent = d.playerLevel;
+    document.getElementById('energy').textContent = d.energy;
+    document.getElementById('coins').textContent = d.coins.toLocaleString();
+    document.getElementById('gems').textContent = d.gems.toLocaleString();
+  },
+
+  updateLobbyCharacter() {
+    const id = SaveSystem.data.lobbyHeroId;
+    const char = getCharacterById(id);
+    if (!char) return;
+
+    document.getElementById('lobby-char-name').textContent = char.name;
+    document.getElementById('lobby-char-name-tag').textContent = char.name;
+    const rarityEl = document.getElementById('lobby-char-rarity');
+    rarityEl.textContent = char.rarity;
+    rarityEl.className = 'rarity-badge rarity-' + char.rarity.toLowerCase().replace('+', 'plus');
+
+    const elemEl = document.getElementById('lobby-char-element');
+    elemEl.textContent = char.element.toUpperCase();
+    elemEl.className = 'element-badge element-' + char.element.toLowerCase();
+
+    document.getElementById('lobby-char-role').textContent = char.role;
+
+    const owned = SaveSystem.getCharacterData(id);
+    const power = calculatePower(char, owned?.level || 1, owned?.stars || 0);
+    document.getElementById('lobby-char-power').textContent = power.toLocaleString();
+
+    // Visual
+    const visual = document.getElementById('lobby-char-visual');
+    visual.querySelector('.char-head').style.background =
+      `linear-gradient(145deg, ${getRarityColor(char.rarity)}, #94a3b8)`;
+  },
+
+  bindEvents() {
+    document.getElementById('change-hero-btn').addEventListener('click', () => {
+      Game.showScreen('heroes');
+    });
+
+    document.getElementById('lobby-character').addEventListener('click', () => {
+      const id = SaveSystem.data.lobbyHeroId;
+      const char = getCharacterById(id);
+      if (char) {
+        Game.showToast(`${char.name}: "พร้อมรบแล้ว!"`, 'success');
+      }
+    });
+  }
+};
+
+</script>
+  <script>
+/**
+ * Summon / Gacha UI + Cinematic
+ */
+
+const SummonUI = {
+  currentBanner: 'normal',
+
+  init() {
+    this.bindEvents();
+    this.updatePity();
+  },
+
+  updatePity() {
+    const p = SaveSystem.data.pity;
+    document.getElementById('pity-ssr').textContent = p.ssr;
+    document.getElementById('pity-ssrplus').textContent = p.ssrplus;
+    document.getElementById('pity-sss').textContent = p.sss;
+
+    const freeBtn = document.getElementById('free-summon');
+    if (SaveSystem.data.freeSummonAvailable) {
+      freeBtn.style.display = 'block';
+    } else {
+      freeBtn.style.display = 'none';
+    }
+  },
+
+  bindEvents() {
+    document.querySelectorAll('.banner-tabs .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.banner-tabs .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.currentBanner = tab.dataset.banner;
+      });
+    });
+
+    document.getElementById('summon-x1').addEventListener('click', () => this.doSummon(1));
+    document.getElementById('summon-x10').addEventListener('click', () => this.doSummon(10));
+    document.getElementById('free-summon').addEventListener('click', () => this.doFreeSummon());
+    document.getElementById('skip-cinematic').addEventListener('click', () => this.skipCinematic());
+  },
+
+  doSummon(count) {
+    if (!GachaSystem.canAfford(count)) {
+      Game.showToast('Gems ไม่พอ!', 'error');
+      return;
+    }
+    if (!GachaSystem.spendGems(count)) return;
+
+    LobbyUI.updateResources();
+    const results = count === 1 ? [GachaSystem.rollOne()] : GachaSystem.rollTen();
+    this.playCinematic(results);
+    this.updatePity();
+  },
+
+  doFreeSummon() {
+    const result = GachaSystem.freeSummon();
+    if (!result) {
+      Game.showToast('Free Summon ยังไม่พร้อม', 'warning');
+      return;
+    }
+    this.playCinematic([result]);
+    this.updatePity();
+  },
+
+  playCinematic(results) {
+    Game.showScreen('gacha-cinematic');
+    const bg = document.getElementById('cinematic-bg');
+    const content = document.getElementById('cinematic-content');
+    const rarityReveal = document.getElementById('rarity-reveal');
+    const charReveal = document.getElementById('character-reveal');
+
+    // Reset
+    bg.className = 'cinematic-bg';
+    rarityReveal.style.opacity = '0';
+    charReveal.className = 'character-reveal';
+    charReveal.innerHTML = '';
+
+    const highest = results.reduce((a, b) =>
+      RARITY_ORDER[a.rarity] > RARITY_ORDER[b.rarity] ? a : b
+    );
+
+    // Phase 1: Portal
+    setTimeout(() => {
+      bg.classList.add('rarity-' + highest.rarity.toLowerCase().replace('+', 'plus'));
+    }, 300);
+
+    // Phase 2: Rarity reveal
+    setTimeout(() => {
+      rarityReveal.textContent = highest.rarity;
+      rarityReveal.style.color = getRarityColor(highest.rarity);
+      rarityReveal.style.opacity = '1';
+      rarityReveal.style.transition = 'opacity 0.5s';
+    }, 800);
+
+    // Phase 3: Character(s)
+    setTimeout(() => {
+      rarityReveal.style.opacity = '0';
+      if (results.length === 1) {
+        const r = results[0];
+        charReveal.innerHTML = `
+          <div class="reveal-portrait" style="border-color: ${getRarityColor(r.rarity)}">
+            <span style="font-size:3rem">${r.character.icon}</span>
+            ${r.isNew ? '<span class="reveal-new">NEW!</span>' : ''}
+          </div>
+          <div class="reveal-name">${r.character.name}</div>
+          <div class="reveal-meta">
+            <span class="rarity-badge rarity-${r.rarity.toLowerCase().replace('+','plus')}">${r.rarity}</span>
+            <span class="element-badge element-${r.character.element.toLowerCase()}">${r.character.element}</span>
+          </div>
+        `;
+        charReveal.classList.add('show');
+      } else {
+        charReveal.innerHTML = `<div class="multi-results">${results.map((r, i) => `
+          <div class="multi-result-card" style="border-color:${getRarityColor(r.rarity)};animation-delay:${i*0.08}s">
+            <div style="font-size:1.8rem">${r.character.icon}</div>
+            <div class="card-name">${r.character.name}</div>
+            <div class="card-rarity" style="color:${getRarityColor(r.rarity)}">${r.rarity}</div>
+            ${r.isNew ? '<span class="reveal-new">NEW</span>' : ''}
+          </div>
+        `).join('')}</div>`;
+        charReveal.classList.add('show');
+      }
+    }, 1600);
+
+    // Auto return
+    this.cinematicTimeout = setTimeout(() => {
+      this.endCinematic();
+    }, results.length === 1 ? 4000 : 5500);
+  },
+
+  skipCinematic() {
+    clearTimeout(this.cinematicTimeout);
+    this.endCinematic();
+  },
+
+  endCinematic() {
+    Game.showScreen('summon');
+    LobbyUI.updateResources();
+    HeroesUI.refresh();
+  }
+};
+
+</script>
+  <script>
+/**
+ * Heroes Collection UI
+ */
+
+const HeroesUI = {
+  selectedId: null,
+
+  init() {
+    this.bindEvents();
+    this.refresh();
+  },
+
+  refresh() {
+    this.renderGrid();
+    document.getElementById('owned-count').textContent =
+      Object.keys(SaveSystem.data.ownedCharacters).length;
+  },
+
+  renderGrid() {
+    const rarityFilter = document.getElementById('filter-rarity')?.value || 'all';
+    const elementFilter = document.getElementById('filter-element')?.value || 'all';
+    const sortBy = document.getElementById('sort-heroes')?.value || 'power';
+
+    let list = [...CHARACTERS];
+
+    if (rarityFilter !== 'all') list = list.filter(c => c.rarity === rarityFilter);
+    if (elementFilter !== 'all') list = list.filter(c => c.element === elementFilter);
+
+    list.sort((a, b) => {
+      const ownedA = SaveSystem.ownsCharacter(a.id);
+      const ownedB = SaveSystem.ownsCharacter(b.id);
+      if (ownedA !== ownedB) return ownedB ? 1 : -1;
+
+      if (sortBy === 'rarity') return RARITY_ORDER[b.rarity] - RARITY_ORDER[a.rarity];
+      if (sortBy === 'name') return a.name.localeCompare(b.name);
+      if (sortBy === 'level') {
+        const la = SaveSystem.getCharacterData(a.id)?.level || 0;
+        const lb = SaveSystem.getCharacterData(b.id)?.level || 0;
+        return lb - la;
+      }
+      // power
+      const pa = ownedA ? calculatePower(a, SaveSystem.getCharacterData(a.id)?.level || 1, SaveSystem.getCharacterData(a.id)?.stars || 0) : 0;
+      const pb = ownedB ? calculatePower(b, SaveSystem.getCharacterData(b.id)?.level || 1, SaveSystem.getCharacterData(b.id)?.stars || 0) : 0;
+      return pb - pa;
+    });
+
+    const grid = document.getElementById('heroes-grid');
+    grid.innerHTML = list.map(c => {
+      const owned = SaveSystem.ownsCharacter(c.id);
+      const isNew = SaveSystem.data.newCharacters.includes(c.id);
+      return `
+        <div class="hero-card ${owned ? '' : 'locked'} ${this.selectedId === c.id ? 'selected' : ''}"
+             data-id="${c.id}" onclick="HeroesUI.select(${c.id})">
+          <div class="card-portrait" style="border:2px solid ${owned ? getRarityColor(c.rarity) : '#333'}">
+            ${owned ? c.icon : '❓'}
+          </div>
+          <div class="card-name">${owned ? c.name : '???'}</div>
+          <div class="card-rarity" style="color:${getRarityColor(c.rarity)}">${c.rarity}</div>
+          ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+        </div>
+      `;
+    }).join('');
+  },
+
+  select(id) {
+    this.selectedId = id;
+    this.renderGrid();
+    this.showPreview(id);
+  },
+
+  showPreview(id) {
+    const char = getCharacterById(id);
+    const owned = SaveSystem.ownsCharacter(id);
+    const data = SaveSystem.getCharacterData(id);
+    const preview = document.getElementById('hero-preview');
+
+    if (!owned) {
+      preview.innerHTML = `<div class="preview-placeholder">ยังไม่ได้ครอบครอง<br>${char.name}</div>`;
+      return;
+    }
+
+    const power = calculatePower(char, data.level, data.stars);
+    preview.innerHTML = `
+      <div class="preview-portrait" style="border-color:${getRarityColor(char.rarity)}">
+        ${char.icon}
+      </div>
+      <div class="preview-name">${char.name}</div>
+      <div class="char-meta">
+        <span class="rarity-badge rarity-${char.rarity.toLowerCase().replace('+','plus')}">${char.rarity}</span>
+        <span class="element-badge element-${char.element.toLowerCase()}">${char.element}</span>
+      </div>
+      <div style="margin-top:8px;color:var(--gold);font-weight:700">POWER ${power.toLocaleString()}</div>
+      <div class="preview-stats">
+        <div>HP: ${Math.floor(char.baseStats.hp * (1+(data.level-1)*0.08)).toLocaleString()}</div>
+        <div>ATK: ${Math.floor(char.baseStats.atk * (1+(data.level-1)*0.08))}</div>
+        <div>DEF: ${Math.floor(char.baseStats.def * (1+(data.level-1)*0.08))}</div>
+        <div>SPD: ${char.baseStats.spd}</div>
+        <div>Lv.${data.level}</div>
+        <div>${'★'.repeat(data.stars)}${'☆'.repeat(char.maxStars - data.stars)}</div>
+      </div>
+      <button class="change-hero-btn" style="margin-top:16px" onclick="HeroesUI.setLobby(${id})">SET AS LOBBY</button>
+      <button class="change-hero-btn" style="margin-top:8px" onclick="HeroesUI.openDetail(${id})">DETAILS</button>
+    `;
+
+    // Clear new flag
+    SaveSystem.data.newCharacters = SaveSystem.data.newCharacters.filter(x => x !== id);
+    SaveSystem.save();
+  },
+
+  setLobby(id) {
+    SaveSystem.data.lobbyHeroId = id;
+    SaveSystem.save();
+    LobbyUI.updateLobbyCharacter();
+    Game.showToast('ตั้งเป็น Lobby Hero แล้ว!', 'success');
+  },
+
+  openDetail(id) {
+    Game.showCharacterDetail(id);
+  },
+
+  bindEvents() {
+    document.getElementById('filter-rarity')?.addEventListener('change', () => this.refresh());
+    document.getElementById('filter-element')?.addEventListener('change', () => this.refresh());
+    document.getElementById('sort-heroes')?.addEventListener('change', () => this.refresh());
+  }
+};
+
+</script>
+  <script>
+/**
+ * Team Setup UI
+ */
+
+const TeamUI = {
+  selectedSlot: null,
+
+  init() {
+    this.bindEvents();
+    this.render();
+  },
+
+  render() {
+    const team = SaveSystem.getCurrentTeam();
+    const slots = document.querySelectorAll('.team-slot');
+    let totalPower = 0;
+
+    slots.forEach((slot, i) => {
+      const charId = team[i];
+      const charEl = slot.querySelector('.slot-char');
+      if (charId) {
+        const char = getCharacterById(charId);
+        const data = SaveSystem.getCharacterData(charId);
+        charEl.innerHTML = `<div style="font-size:1.8rem">${char.icon}</div><div style="font-size:0.6rem">${char.name.split(' ')[0]}</div>`;
+        slot.classList.add('filled');
+        totalPower += calculatePower(char, data?.level || 1, data?.stars || 0);
+      } else {
+        charEl.innerHTML = '+';
+        charEl.className = 'slot-char empty';
+        slot.classList.remove('filled');
+      }
+    });
+
+    document.getElementById('team-total-power').textContent = totalPower.toLocaleString();
+    this.renderAvailable();
+  },
+
+  renderAvailable() {
+    const container = document.getElementById('available-heroes');
+    const owned = Object.keys(SaveSystem.data.ownedCharacters).map(Number);
+    const team = SaveSystem.getCurrentTeam();
+
+    container.innerHTML = owned.map(id => {
+      const char = getCharacterById(id);
+      const inTeam = team.includes(id);
+      return `
+        <div class="hero-card ${inTeam ? 'selected' : ''}" style="aspect-ratio:auto;padding:6px"
+             onclick="TeamUI.pickCharacter(${id})">
+          <div style="font-size:1.5rem">${char.icon}</div>
+          <div class="card-name">${char.name.split(' ')[0]}</div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  pickCharacter(id) {
+    if (this.selectedSlot === null) {
+      // Find empty slot or first slot
+      const team = SaveSystem.getCurrentTeam();
+      let slot = team.findIndex(s => s === null);
+      if (slot === -1) slot = 0;
+      this.selectedSlot = slot;
+    }
+
+    // Remove from other slots if already in team
+    const team = SaveSystem.getCurrentTeam();
+    team.forEach((c, i) => {
+      if (c === id) SaveSystem.setTeamSlot(i, null);
+    });
+
+    SaveSystem.setTeamSlot(this.selectedSlot, id);
+    this.selectedSlot = null;
+    this.render();
+  },
+
+  bindEvents() {
+    document.querySelectorAll('.team-slot').forEach(slot => {
+      slot.addEventListener('click', () => {
+        this.selectedSlot = parseInt(slot.dataset.slot);
+        // Clear if already filled
+        const team = SaveSystem.getCurrentTeam();
+        if (team[this.selectedSlot]) {
+          SaveSystem.setTeamSlot(this.selectedSlot, null);
+          this.selectedSlot = null;
+          this.render();
+        }
+      });
+    });
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        SaveSystem.data.currentTeamIndex = parseInt(btn.dataset.preset) - 1;
+        SaveSystem.save();
+        this.render();
+      });
+    });
+  }
+};
+
+</script>
+  <script>
+/**
+ * World Map UI
+ */
+
+const WorldMapUI = {
+  currentWorld: 1,
+  selectedStage: null,
+
+  init() {
+    this.renderWorldTabs();
+    this.renderStages();
+    this.bindEvents();
+  },
+
+  renderWorldTabs() {
+    const container = document.getElementById('world-tabs');
+    container.innerHTML = WORLDS.map(w => {
+      const unlocked = SaveSystem.data.unlockedWorlds.includes(w.id);
+      return `
+        <button class="world-tab ${w.id === this.currentWorld ? 'active' : ''} ${unlocked ? '' : 'locked'}"
+                data-world="${w.id}" ${unlocked ? '' : 'disabled'}>
+          W${w.id}: ${w.name.split(' ').slice(0,2).join(' ')}
+        </button>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.world-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (tab.classList.contains('locked')) return;
+        this.currentWorld = parseInt(tab.dataset.world);
+        this.selectedStage = null;
+        this.renderWorldTabs();
+        this.renderStages();
+        document.getElementById('start-stage-btn').disabled = true;
+      });
+    });
+  },
+
+  renderStages() {
+    const world = getWorld(this.currentWorld);
+    if (!world) return;
+
+    const map = document.getElementById('stage-map');
+    map.innerHTML = world.stages.map((stage, i) => {
+      const stageId = stage.id;
+      const cleared = SaveSystem.isStageCleared(stageId);
+      const stars = SaveSystem.getStageStars(stageId);
+      const canEnter = SaveSystem.canEnterStage(stageId);
+      const isBoss = stage.boss;
+
+      return `
+        <div class="stage-node ${cleared ? 'cleared' : ''} ${!canEnter ? 'locked' : ''} ${isBoss ? 'boss' : ''} ${this.selectedStage === stageId ? 'selected' : ''}"
+             data-stage="${stageId}" onclick="WorldMapUI.selectStage('${stageId}')">
+          ${!canEnter ? '<span class="lock-icon">🔒</span>' : ''}
+          <div class="stage-id">${stage.id}</div>
+          <div style="font-size:0.65rem;margin-top:2px;color:var(--text-dim)">${stage.name.substring(0,12)}</div>
+          <div class="stage-stars">${cleared ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : ''}</div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  selectStage(stageId) {
+    if (!SaveSystem.canEnterStage(stageId)) {
+      Game.showToast('ต้องผ่านด่านก่อนหน้าก่อน', 'warning');
+      return;
+    }
+    this.selectedStage = stageId;
+    this.renderStages();
+
+    const [w, s] = stageId.split('-').map(Number);
+    const stage = getStage(w, s);
+    document.getElementById('stage-name').textContent = `${stage.id}: ${stage.name}`;
+    document.getElementById('stage-power').textContent = stage.power.toLocaleString();
+    document.getElementById('stage-stars').textContent =
+      '⭐'.repeat(SaveSystem.getStageStars(stageId)) + '☆'.repeat(3 - SaveSystem.getStageStars(stageId));
+    document.getElementById('stage-rewards').textContent = 'Gold, EXP, Materials';
+    document.getElementById('start-stage-btn').disabled = false;
+  },
+
+  startBattle() {
+    if (!this.selectedStage) return;
+    const team = SaveSystem.getCurrentTeam().filter(id => id);
+    if (team.length < 1) {
+      Game.showToast('ต้องมีอย่างน้อย 1 ตัวในทีม!', 'error');
+      return;
+    }
+    if (SaveSystem.data.energy < 10) {
+      Game.showToast('Energy ไม่พอ!', 'error');
+      return;
+    }
+    SaveSystem.data.energy -= 10;
+    SaveSystem.save();
+    LobbyUI.updateResources();
+
+    Game.showScreen('battle');
+    const canvas = document.getElementById('battle-canvas');
+    BattleSystem.init(canvas);
+    BattleSystem.start(this.selectedStage, SaveSystem.getCurrentTeam());
+  },
+
+  bindEvents() {
+    document.getElementById('start-stage-btn').addEventListener('click', () => this.startBattle());
+  }
+};
+
+</script>
+  <script>
+/**
+ * MYTHIC CLASH: Eternal Arena
+ * Main Game Controller
+ */
+
+const Game = {
+  currentScreen: 'loading',
+
+  async init() {
+    // Simulate loading
+    await this.simulateLoading();
+
+    // Load save
+    SaveSystem.load();
+
+    // Init systems
+    LobbyUI.init();
+    SummonUI.init();
+    HeroesUI.init();
+    TeamUI.init();
+    WorldMapUI.init();
+
+    // Bind global navigation
+    this.bindNavigation();
+    this.bindBattleControls();
+    this.bindResultButtons();
+    this.bindSettings();
+
+    // Show lobby
+    this.showScreen('lobby');
+    Game.showToast('ยินดีต้อนรับสู่ Eternal Arena!', 'success');
+  },
+
+  simulateLoading() {
+    return new Promise(resolve => {
+      const progress = document.getElementById('loading-progress');
+      const percent = document.getElementById('loading-percent');
+      const tip = document.getElementById('loading-tip');
+      const tips = [
+        'กำลังโหลดข้อมูลนักรบ 75 ตัวจาก Eternal Core...',
+        'กำลังสร้างมิติ Eternal Arena...',
+        'กำลังเตรียมระบบกาชา...',
+        'กำลังเชื่อมต่อ 8 ธาตุ...',
+        'พร้อมแล้ว!'
+      ];
+      let p = 0;
+      const interval = setInterval(() => {
+        p += Math.random() * 15 + 5;
+        if (p >= 100) {
+          p = 100;
+          clearInterval(interval);
+          setTimeout(resolve, 400);
+        }
+        progress.style.width = p + '%';
+        percent.textContent = Math.floor(p) + '%';
+        tip.textContent = tips[Math.min(Math.floor(p / 25), tips.length - 1)];
+      }, 200);
+    });
+  },
+
+  showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById(name + '-screen') || document.getElementById(name);
+    if (screen) {
+      screen.classList.add('active');
+      this.currentScreen = name;
+    }
+
+    // Refresh data when entering certain screens
+    if (name === 'lobby') LobbyUI.updateResources();
+    if (name === 'heroes') HeroesUI.refresh();
+    if (name === 'team') TeamUI.render();
+    if (name === 'world-map' || name === 'story') {
+      WorldMapUI.renderWorldTabs();
+      WorldMapUI.renderStages();
+    }
+    if (name === 'summon') SummonUI.updatePity();
+  },
+
+  bindNavigation() {
+    document.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if (action === 'story' || action === 'battle') {
+          this.showScreen('world-map');
+        } else if (action === 'summon') {
+          this.showScreen('summon');
+        } else if (action === 'heroes') {
+          this.showScreen('heroes');
+        } else if (action === 'team') {
+          this.showScreen('team');
+        } else if (action === 'lobby') {
+          this.showScreen('lobby');
+        } else if (action === 'shop') {
+          this.showToast('Shop กำลังพัฒนา...', 'warning');
+        } else if (action === 'arena') {
+          this.showToast('Arena กำลังพัฒนา...', 'warning');
+        } else if (action === 'quest') {
+          this.showToast('Quest กำลังพัฒนา...', 'warning');
+        } else if (action === 'event') {
+          this.showToast('Event กำลังพัฒนา...', 'warning');
+        } else if (action === 'ranking') {
+          this.showToast('Ranking กำลังพัฒนา...', 'warning');
+        }
+      });
+    });
+
+    document.querySelectorAll('.back-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        this.showScreen(action || 'lobby');
+      });
+    });
+  },
+
+  bindBattleControls() {
+    document.getElementById('btn-attack')?.addEventListener('click', () => BattleSystem.attack());
+    document.getElementById('btn-dodge')?.addEventListener('click', () => BattleSystem.dodge());
+    document.getElementById('btn-skill1')?.addEventListener('click', () => BattleSystem.useSkill(1));
+    document.getElementById('btn-skill2')?.addEventListener('click', () => BattleSystem.useSkill(2));
+    document.getElementById('btn-ultimate')?.addEventListener('click', () => BattleSystem.useSkill('ult'));
+
+    // Simple joystick (visual only for prototype)
+    const knob = document.getElementById('joystick-knob');
+    const base = document.querySelector('.joystick-base');
+    if (base && knob) {
+      let dragging = false;
+      base.addEventListener('pointerdown', e => {
+        dragging = true;
+        base.setPointerCapture(e.pointerId);
+      });
+      base.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        const rect = base.getBoundingClientRect();
+        const cx = rect.width / 2, cy = rect.height / 2;
+        let dx = e.clientX - rect.left - cx;
+        let dy = e.clientY - rect.top - cy;
+        const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 30);
+        const angle = Math.atan2(dy, dx);
+        knob.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
+      });
+      base.addEventListener('pointerup', () => {
+        dragging = false;
+        knob.style.transform = 'translate(-50%, -50%)';
+      });
+    }
+  },
+
+  bindResultButtons() {
+    document.getElementById('result-next')?.addEventListener('click', () => {
+      document.getElementById('battle-result').classList.add('hidden');
+      BattleSystem.stop();
+      this.showScreen('world-map');
+      WorldMapUI.renderStages();
+    });
+    document.getElementById('result-retry')?.addEventListener('click', () => {
+      document.getElementById('battle-result').classList.add('hidden');
+      BattleSystem.stop();
+      WorldMapUI.startBattle();
+    });
+    document.getElementById('result-home')?.addEventListener('click', () => {
+      document.getElementById('battle-result').classList.add('hidden');
+      BattleSystem.stop();
+      this.showScreen('lobby');
+    });
+  },
+
+  bindSettings() {
+    document.getElementById('reset-save')?.addEventListener('click', () => {
+      if (confirm('ลบข้อมูลทั้งหมดและเริ่มใหม่?')) {
+        SaveSystem.reset();
+        location.reload();
+      }
+    });
+  },
+
+  showSettings() {
+    this.showScreen('settings');
+  },
+
+  showCharacterDetail(id) {
+    const char = getCharacterById(id);
+    const data = SaveSystem.getCharacterData(id);
+    if (!char || !data) return;
+
+    document.getElementById('detail-name').textContent = char.name;
+    const rarityEl = document.getElementById('detail-rarity');
+    rarityEl.textContent = char.rarity;
+    rarityEl.className = 'rarity-badge rarity-' + char.rarity.toLowerCase().replace('+', 'plus');
+    document.getElementById('detail-element').textContent = char.element;
+    document.getElementById('detail-element').className = 'element-badge element-' + char.element.toLowerCase();
+    document.getElementById('detail-role').textContent = char.role;
+    document.getElementById('detail-level').textContent = data.level;
+    document.getElementById('detail-max-level').textContent = 20 + data.stars * 10;
+    document.getElementById('detail-stars').textContent = '★'.repeat(data.stars) + '☆'.repeat(char.maxStars - data.stars);
+    document.getElementById('detail-power').textContent = calculatePower(char, data.level, data.stars).toLocaleString();
+
+    document.getElementById('char-large-preview').innerHTML = `<span>${char.icon}</span>`;
+    document.getElementById('char-large-preview').style.borderColor = getRarityColor(char.rarity);
+
+    const mult = 1 + (data.level - 1) * 0.08;
+    const stats = char.baseStats;
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-item"><div class="stat-label">HP</div><div class="stat-value">${Math.floor(stats.hp*mult).toLocaleString()}</div></div>
+      <div class="stat-item"><div class="stat-label">ATK</div><div class="stat-value">${Math.floor(stats.atk*mult)}</div></div>
+      <div class="stat-item"><div class="stat-label">DEF</div><div class="stat-value">${Math.floor(stats.def*mult)}</div></div>
+      <div class="stat-item"><div class="stat-label">SPD</div><div class="stat-value">${stats.spd}</div></div>
+      <div class="stat-item"><div class="stat-label">CRIT RATE</div><div class="stat-value">${stats.critRate}%</div></div>
+      <div class="stat-item"><div class="stat-label">CRIT DMG</div><div class="stat-value">${stats.critDmg}%</div></div>
+    `;
+
+    document.getElementById('skills-list').innerHTML = `
+      <div class="skill-item"><div class="skill-name">${char.skills.skill1.name}</div><div class="skill-desc">${char.skills.skill1.desc}</div></div>
+      <div class="skill-item"><div class="skill-name">${char.skills.skill2.name}</div><div class="skill-desc">${char.skills.skill2.desc}</div></div>
+      <div class="skill-item"><div class="skill-name">Passive: ${char.skills.passive.name}</div><div class="skill-desc">${char.skills.passive.desc}</div></div>
+      <div class="skill-item"><div class="skill-name">Ultimate: ${char.skills.ultimate.name}</div><div class="skill-desc">${char.skills.ultimate.desc}</div></div>
+    `;
+
+    document.getElementById('btn-set-lobby').onclick = () => {
+      HeroesUI.setLobby(id);
+      this.showScreen('lobby');
+    };
+
+    document.getElementById('btn-levelup').onclick = () => {
+      if (SaveSystem.data.coins < 500) {
+        this.showToast('Coins ไม่พอ!', 'error');
+        return;
+      }
+      SaveSystem.data.coins -= 500;
+      data.level = Math.min(data.level + 1, 20 + data.stars * 10);
+      SaveSystem.save();
+      LobbyUI.updateResources();
+      this.showCharacterDetail(id);
+      this.showToast('Level Up!', 'success');
+    };
+
+    this.showScreen('character-detail');
+  },
+
+  showToast(msg, type = '') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+};
+
+// Start
+document.addEventListener('DOMContentLoaded', () => Game.init());
+
+</script>
+</body>
+</html>
